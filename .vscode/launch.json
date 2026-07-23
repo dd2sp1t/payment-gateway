@@ -1,0 +1,11 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch PaymentGateway.Api",
+            "type": "dotnet",
+            "request": "launch",
+            "projectPath": "${workspaceFolder}/src/PaymentGateway.Api/PaymentGateway.Api.csproj"
+        }
+    ]
+}
