@@ -45,9 +45,7 @@ internal sealed class OperationRepository : IOperationRepository
 
         if (dbOperation is null)
         {
-            throw new PersistenceException(
-                $"Operation '{operation.OperationId}' was not found.",
-                InnerException: null);
+            throw new NotFoundException($"Operation '{operation.OperationId}' was not found.");
         }
 
         _mapper.Apply(operation, dbOperation);

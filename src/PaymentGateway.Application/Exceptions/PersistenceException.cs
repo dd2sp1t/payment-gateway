@@ -1,5 +1,6 @@
 namespace PaymentGateway.Application.Exceptions;
 
-public sealed class PersistenceException(string Message, Exception? InnerException) : Exception(Message, InnerException)
+public sealed class PersistenceException(string message, Exception innerException)
+    : ApplicationException(message, innerException)
 {
 }

@@ -1,12 +1,25 @@
+using System.Buffers;
+using PaymentGateway.Api.ExceptionHandling;
+using PaymentGateway.Api.Serialization;
 using PaymentGateway.Application;
 using PaymentGateway.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddApplication();
-builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services
+    .AddApplication()
+    .AddInfrastructure(builder.Configuration);
 
-builder.Services.AddControllers();
+builder.Services
+    .AddProblemDetails()
+    .AddExceptionHandler<GlobalExceptionHandler>();
+
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new UpperCaseEnumConverterFactory());
+    });
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -15,6 +28,8 @@ var app = builder.Build();
 
 app.UseSwagger();
 app.UseSwaggerUI();
+
+app.UseExceptionHandler();
 
 app.MapControllers();
 

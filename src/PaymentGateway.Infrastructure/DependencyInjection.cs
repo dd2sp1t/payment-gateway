@@ -25,7 +25,8 @@ public static class DependencyInjection
                 });
         });
 
-        services.AddScoped<OperationMapper>();
+        services.AddSingleton<PersistenceExceptionMapper>();
+        services.AddSingleton<OperationMapper>();
 
         services.AddScoped<IOperationRepository, OperationRepository>();
 

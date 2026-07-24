@@ -1,17 +1,19 @@
 using Microsoft.EntityFrameworkCore;
 using PaymentGateway.Application.Abstractions.Persistence;
-using PaymentGateway.Application.Exceptions;
 using PaymentGateway.Infrastructure.Persistence.Entities;
+using PaymentGateway.Infrastructure.Persistence.Mappers;
 
 namespace PaymentGateway.Infrastructure.Persistence;
 
 internal sealed class UnitOfWork : IUnitOfWork
 {
     private readonly PaymentGatewayDbContext _dbContext;
+    private readonly PersistenceExceptionMapper _exceptionMapper;
 
-    public UnitOfWork(PaymentGatewayDbContext dbContext)
+    public UnitOfWork(PaymentGatewayDbContext dbContext, PersistenceExceptionMapper exceptionMapper)
     {
         _dbContext = dbContext;
+        _exceptionMapper = exceptionMapper;
     }
 
     public async Task SaveChangesAsync(CancellationToken cancellationToken)
@@ -37,12 +39,7 @@ internal sealed class UnitOfWork : IUnitOfWork
         }
         catch (DbUpdateException exception)
         {
-            throw MapException(exception);
+            throw _exceptionMapper.Map(exception);
         }
-    }
-
-    private static PersistenceException MapException(DbUpdateException exception)
-    {
-        return new PersistenceException("Failed to save changes.", exception);
     }
 }

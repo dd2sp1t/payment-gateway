@@ -18,7 +18,7 @@ internal sealed class OperationConfig : IEntityTypeConfiguration<DbOperation>
 
         builder
             .HasKey(x => x.OperationId)
-            .HasName("pk_operations");
+            .HasName(DatabaseConstraints.OperationsPrimaryKey);
 
         builder
             .Property(x => x.OperationId)
@@ -31,7 +31,7 @@ internal sealed class OperationConfig : IEntityTypeConfiguration<DbOperation>
         builder
             .HasIndex(x => x.ProviderPaymentId)
             .IsUnique()
-            .HasDatabaseName("ux_operations_provider_payment_id");
+            .HasDatabaseName(DatabaseConstraints.OperationsProviderPaymentId);
 
         builder
             .Property(x => x.Amount)

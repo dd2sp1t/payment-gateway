@@ -141,8 +141,7 @@ public sealed class Operation
 
     private void SetProviderPaymentId(Guid providerPaymentId)
     {
-        if (ProviderPaymentId is not null &&
-            ProviderPaymentId != providerPaymentId)
+        if (ProviderPaymentId is not null && ProviderPaymentId != providerPaymentId)
         {
             throw new DomainException(
                 $"Provider payment id cannot be changed for operation '{OperationId}'.");
