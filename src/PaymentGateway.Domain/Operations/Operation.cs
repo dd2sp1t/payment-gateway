@@ -24,6 +24,26 @@ public sealed class Operation
 
     private Operation(
         OperationId operationId,
+        Guid? providerPaymentId,
+        decimal amount,
+        string currency,
+        string description,
+        OperationStatus status)
+    {
+        OperationId = operationId;
+        ProviderPaymentId = providerPaymentId;
+        Amount = amount;
+        Currency = currency;
+        Description = description;
+        Status = status;
+    }
+
+    #endregion
+
+    #region Factory methods
+
+    public static Operation Create(
+        OperationId operationId,
         decimal amount,
         string currency,
         string description)
@@ -48,28 +68,30 @@ public sealed class Operation
             throw new DomainException("Description is required.");
         }
 
-        OperationId = operationId;
-        Amount = amount;
-        Currency = currency;
-        Description = description;
-        Status = OperationStatus.Created;
+        return new Operation(
+            operationId,
+            providerPaymentId: null,
+            amount,
+            currency,
+            description,
+            OperationStatus.Created);
     }
 
-    #endregion
-
-    #region Factory methods
-
-    public static Operation Create(
+    internal static Operation Restore(
         OperationId operationId,
+        Guid? providerPaymentId,
         decimal amount,
         string currency,
-        string description)
+        string description,
+        OperationStatus status)
     {
         return new Operation(
             operationId,
+            providerPaymentId,
             amount,
             currency,
-            description);
+            description,
+            status);
     }
 
     #endregion

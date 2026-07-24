@@ -8,4 +8,10 @@ obj/
 !.vscode/launch.json
 !.vscode/tasks.json
 
+# ASP.NET Core
+**/appsettings.Development.json
+
+# Entity Framework
+**/Migrations/*Snapshot.cs
+
 TestResults/
