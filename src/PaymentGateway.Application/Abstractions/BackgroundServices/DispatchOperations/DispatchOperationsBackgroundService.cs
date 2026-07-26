@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PaymentGateway.Application.Abstractions.Persistence.ReadRepositories;
 using PaymentGateway.Application.Operations.DispatchOperation;
+using PaymentGateway.Domain.Operations;
 
 namespace PaymentGateway.Application.Abstractions.BackgroundServices.DispatchOperations;
 
@@ -27,16 +28,23 @@ internal sealed class DispatchOperationsBackgroundService : PeriodicBackgroundSe
         using var scope = _scopeFactory.CreateScope();
 
         var reader = scope.ServiceProvider.GetRequiredService<IOperationReadRepository>();
-        var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
 
-        var operations = await reader.GetProcessingOperationsAsync(_options.BatchSize, cancellationToken);
+        var ids = await reader.GetProcessingOperationIdsAsync(_options.BatchSize, cancellationToken);
 
-        foreach (var chunk in operations.Chunk(_options.MaxParallelDispatches))
+        foreach (var chunk in ids.Chunk(_options.MaxParallelDispatches))
         {
-            var tasks = chunk
-                .Select(x => mediator.Send(new DispatchOperationCommand(x.OperationId), cancellationToken));
+            var tasks = chunk.Select(id => DispatchOperationAsync(id, cancellationToken));
 
             await Task.WhenAll(tasks);
         }
+    }
+
+    private async Task DispatchOperationAsync(OperationId operationId, CancellationToken cancellationToken)
+    {
+        using var scope = _scopeFactory.CreateScope();
+
+        var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+
+        await mediator.Send(new DispatchOperationCommand(operationId), cancellationToken);
     }
 }

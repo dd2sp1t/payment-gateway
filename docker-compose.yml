@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+
+  postgres:
+    image: postgres:17
+    container_name: payment-gateway-postgres
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: payment_gateway
+
+    ports:
+      - "55432:5432"
+
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  provider-simulator:
+    image: ghcr.io/fintech-dev-lab/internship-provider-simulator:v0.2.0
+
+    ports:
+      - "8081:8081"
+
+    environment:
+      CALLBACK_URL: http://host.docker.internal:8080/receipts
+
+volumes:
+  postgres-data:

@@ -93,7 +93,7 @@ public sealed class Operation
             type: OperationEventType.Created,
             fromStatus: null,
             toStatus: OperationStatus.Created,
-            message: "Operation created");
+            message: "Operation created.");
 
         return operation;
     }
@@ -135,7 +135,7 @@ public sealed class Operation
             type: OperationEventType.Processing,
             fromStatus: OperationStatus.Created,
             toStatus: OperationStatus.Processing,
-            message: "Operation processing started");
+            message: "Operation processing started.");
     }
 
     public void Complete(Guid providerPaymentId)
@@ -153,7 +153,7 @@ public sealed class Operation
             type: OperationEventType.Completed,
             fromStatus: OperationStatus.Processing,
             toStatus: OperationStatus.Completed,
-            message: "Operation completed");
+            message: "Operation completed.");
     }
 
     public void Reject(Guid providerPaymentId)
@@ -171,12 +171,17 @@ public sealed class Operation
             type: OperationEventType.Rejected,
             fromStatus: OperationStatus.Processing,
             toStatus: OperationStatus.Rejected,
-            message: "Operation rejected");
+            message: "Operation rejected.");
     }
 
     public void ClearUncommittedEvents()
     {
         _uncommittedEvents.Clear();
+    }
+
+    public void AttachProviderPayment(Guid providerPaymentId)
+    {
+        SetProviderPaymentId(providerPaymentId);
     }
 
     #endregion
@@ -185,13 +190,16 @@ public sealed class Operation
 
     private void SetProviderPaymentId(Guid providerPaymentId)
     {
-        if (ProviderPaymentId is not null && ProviderPaymentId != providerPaymentId)
+        if (ProviderPaymentId is null)
         {
-            throw new DomainException(
-                $"Provider payment id cannot be changed for operation '{OperationId}'.");
+            ProviderPaymentId = providerPaymentId;
+            return;
         }
 
-        ProviderPaymentId ??= providerPaymentId;
+        if (ProviderPaymentId != providerPaymentId)
+        {
+            throw new DomainException($"Provider payment id cannot be changed for operation '{OperationId}'.");
+        }
     }
 
     private void AddEvent(

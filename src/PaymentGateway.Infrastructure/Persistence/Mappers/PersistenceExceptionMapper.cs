@@ -10,6 +10,11 @@ internal sealed class PersistenceExceptionMapper
 {
     public Exception Map(DbUpdateException exception)
     {
+        if (exception is DbUpdateConcurrencyException)
+        {
+            return new ConcurrencyException("Database concurrency conflict.", exception);
+        }
+
         if (exception.InnerException is PostgresException postgresException
             && postgresException.SqlState == PostgresErrorCodes.UniqueViolation)
         {

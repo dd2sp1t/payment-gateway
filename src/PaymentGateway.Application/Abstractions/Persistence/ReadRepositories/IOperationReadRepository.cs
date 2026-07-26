@@ -1,10 +1,8 @@
 namespace PaymentGateway.Application.Abstractions.Persistence.ReadRepositories;
 
-using PaymentGateway.Application.Abstractions.Persistence.ReadModels;
+using PaymentGateway.Domain.Operations;
 
 public interface IOperationReadRepository
 {
-    Task<IReadOnlyList<OperationDispatchModel>> GetProcessingOperationsAsync(
-        int batchSize,
-        CancellationToken cancellationToken);
+    Task<IReadOnlyList<OperationId>> GetProcessingOperationIdsAsync(int batchSize, CancellationToken cancellationToken);
 }
