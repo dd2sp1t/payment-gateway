@@ -1,0 +1,33 @@
+using Microsoft.EntityFrameworkCore;
+using PaymentGateway.Application.Abstractions.Persistence.ReadModels;
+using PaymentGateway.Application.Abstractions.Persistence.ReadRepositories;
+using PaymentGateway.Domain.Operations;
+
+namespace PaymentGateway.Infrastructure.Persistence.ReadRepositories;
+
+internal sealed class OperationReadRepository : IOperationReadRepository
+{
+    private readonly PaymentGatewayDbContext _dbContext;
+
+    public OperationReadRepository(PaymentGatewayDbContext dbContext)
+    {
+        _dbContext = dbContext;
+    }
+
+    public async Task<IReadOnlyList<OperationDispatchModel>> GetProcessingOperationsAsync(
+        int batchSize,
+        CancellationToken cancellationToken)
+    {
+        return await _dbContext.Operations
+            .AsNoTracking()
+            .Where(x => x.Status == OperationStatus.Processing)
+            .OrderBy(x => x.UpdatedAt)
+            .Take(batchSize)
+            .Select(x => new OperationDispatchModel(
+                (OperationId)x.OperationId,
+                x.Amount,
+                x.Currency,
+                x.ProviderPaymentId))
+            .ToListAsync(cancellationToken);
+    }
+}

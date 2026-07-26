@@ -1,5 +1,6 @@
 using MediatR;
 using PaymentGateway.Application.Abstractions.Persistence;
+using PaymentGateway.Application.Abstractions.Persistence.Repositories;
 using PaymentGateway.Application.Exceptions;
 using PaymentGateway.Domain.Operations;
 

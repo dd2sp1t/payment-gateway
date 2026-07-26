@@ -1,6 +1,6 @@
 using PaymentGateway.Domain.Operations;
 
-namespace PaymentGateway.Application.Abstractions.Persistence;
+namespace PaymentGateway.Application.Abstractions.Persistence.Repositories;
 
 public interface IOperationRepository
 {

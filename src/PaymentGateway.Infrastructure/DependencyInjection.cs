@@ -2,8 +2,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PaymentGateway.Application.Abstractions.Persistence;
+using PaymentGateway.Application.Abstractions.Persistence.ReadRepositories;
+using PaymentGateway.Application.Abstractions.Persistence.Repositories;
 using PaymentGateway.Infrastructure.Persistence;
 using PaymentGateway.Infrastructure.Persistence.Mappers;
+using PaymentGateway.Infrastructure.Persistence.ReadRepositories;
 using PaymentGateway.Infrastructure.Persistence.Repositories;
 
 namespace PaymentGateway.Infrastructure;
@@ -30,6 +33,7 @@ public static class DependencyInjection
         services.AddSingleton<OperationEventMapper>();
 
         services.AddScoped<IOperationRepository, OperationRepository>();
+        services.AddScoped<IOperationReadRepository, OperationReadRepository>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
