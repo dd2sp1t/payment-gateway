@@ -17,7 +17,7 @@ namespace PaymentGateway.Infrastructure.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.10")
+                .HasAnnotation("ProductVersion", "10.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -45,6 +45,9 @@ namespace PaymentGateway.Infrastructure.Persistence.Migrations
                         .HasMaxLength(512)
                         .HasColumnType("character varying(512)");
 
+                    b.Property<long>("LastEventId")
+                        .HasColumnType("bigint");
+
                     b.Property<Guid?>("ProviderPaymentId")
                         .HasColumnType("uuid");
 
@@ -67,9 +70,68 @@ namespace PaymentGateway.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ProviderPaymentId")
                         .IsUnique()
-                        .HasDatabaseName("ux_operations_provider_payment_id");
+                        .HasDatabaseName("ux_operations_providerpaymentid");
 
                     b.ToTable("operations", (string)null);
+                });
+
+            modelBuilder.Entity("PaymentGateway.Infrastructure.Persistence.Entities.DbOperationEvent", b =>
+                {
+                    b.Property<string>("OperationId")
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<long>("EventId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FromStatus")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ToStatus")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("OperationId", "EventId")
+                        .HasName("pk_operation_events");
+
+                    b.ToTable("operation_events", (string)null);
+                });
+
+            modelBuilder.Entity("PaymentGateway.Infrastructure.Persistence.Entities.DbOperationEvent", b =>
+                {
+                    b.HasOne("PaymentGateway.Infrastructure.Persistence.Entities.DbOperation", "Operation")
+                        .WithMany("OperationEvents")
+                        .HasForeignKey("OperationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_operation_events_operations_operationid");
+
+                    b.Navigation("Operation");
+                });
+
+            modelBuilder.Entity("PaymentGateway.Infrastructure.Persistence.Entities.DbOperation", b =>
+                {
+                    b.Navigation("OperationEvents");
                 });
 #pragma warning restore 612, 618
         }

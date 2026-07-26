@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using PaymentGateway.Application.Exceptions;
+using PaymentGateway.Domain.Operations;
+using PaymentGateway.Infrastructure.Persistence.Conventions;
 
 namespace PaymentGateway.Infrastructure.Persistence.Mappers;
 
@@ -21,14 +23,13 @@ internal sealed class PersistenceExceptionMapper
     {
         return exception.ConstraintName switch
         {
-            DatabaseConstraints.OperationsPrimaryKey =>
-                new DuplicateResourceException("Operation", "OperationId"),
+            var name when name == ConstraintNames.OperationsPrimaryKey =>
+                new DuplicateResourceException(nameof(Operation), nameof(Operation.OperationId)),
 
-            DatabaseConstraints.OperationsProviderPaymentId =>
-                new DuplicateResourceException("Operation", "ProviderPaymentId"),
+            var name when name == ConstraintNames.OperationsProviderPaymentIdUnique =>
+                new DuplicateResourceException(nameof(Operation), nameof(Operation.ProviderPaymentId)),
 
-            _ =>
-                new PersistenceException("Unique constraint violation.", exception)
+            _ => new PersistenceException("Unique constraint violation.", exception)
         };
     }
 }

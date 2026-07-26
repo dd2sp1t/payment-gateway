@@ -31,6 +31,8 @@ internal sealed class CreateOperationCommandHandler : IRequestHandler<CreateOper
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+        operation.ClearUncommittedEvents();
+
         return new CreateOperationResponse(operation.OperationId, operation.Status);
     }
 }

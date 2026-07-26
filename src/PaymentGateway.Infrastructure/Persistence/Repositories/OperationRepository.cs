@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using PaymentGateway.Application.Abstractions.Persistence;
-using PaymentGateway.Application.Exceptions;
 using PaymentGateway.Domain.Operations;
+using PaymentGateway.Infrastructure.Persistence.Entities;
 using PaymentGateway.Infrastructure.Persistence.Mappers;
 
 namespace PaymentGateway.Infrastructure.Persistence.Repositories;
@@ -9,17 +9,24 @@ namespace PaymentGateway.Infrastructure.Persistence.Repositories;
 internal sealed class OperationRepository : IOperationRepository
 {
     private readonly PaymentGatewayDbContext _dbContext;
-    private readonly OperationMapper _mapper;
+    private readonly OperationMapper _operationMapper;
+    private readonly OperationEventMapper _operationEventMapper;
 
-    public OperationRepository(PaymentGatewayDbContext dbContext, OperationMapper mapper)
+    public OperationRepository(
+        PaymentGatewayDbContext dbContext,
+        OperationMapper operationMapper,
+        OperationEventMapper operationEventMapper)
     {
         _dbContext = dbContext;
-        _mapper = mapper;
+        _operationMapper = operationMapper;
+        _operationEventMapper = operationEventMapper;
     }
 
     public void Add(Operation operation)
     {
-        var dbOperation = _mapper.ToEntity(operation);
+        var dbOperation = _operationMapper.ToEntity(operation);
+
+        AddEvents(operation, dbOperation);
 
         _dbContext.Operations.Add(dbOperation);
     }
@@ -35,7 +42,7 @@ internal sealed class OperationRepository : IOperationRepository
             return null;
         }
 
-        return _mapper.ToDomain(dbOperation);
+        return _operationMapper.ToDomain(dbOperation);
     }
 
     public async Task UpdateAsync(Operation operation, CancellationToken cancellationToken)
@@ -45,9 +52,19 @@ internal sealed class OperationRepository : IOperationRepository
 
         if (dbOperation is null)
         {
-            throw new NotFoundException($"Operation '{operation.OperationId}' was not found.");
+            throw new InvalidOperationException($"Operation '{operation.OperationId}' was not found during update.");
         }
 
-        _mapper.Apply(operation, dbOperation);
+        _operationMapper.Apply(operation, dbOperation);
+
+        AddEvents(operation, dbOperation);
+    }
+
+    private void AddEvents(Operation operation, DbOperation dbOperation)
+    {
+        foreach (var @event in operation.UncommittedEvents)
+        {
+            dbOperation.OperationEvents.Add(_operationEventMapper.ToEntity(@event));
+        }
     }
 }

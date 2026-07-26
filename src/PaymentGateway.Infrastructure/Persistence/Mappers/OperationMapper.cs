@@ -13,7 +13,8 @@ internal sealed class OperationMapper
             amount: dbOperation.Amount,
             currency: dbOperation.Currency,
             description: dbOperation.Description,
-            status: dbOperation.Status);
+            status: dbOperation.Status,
+            lastEventId: dbOperation.LastEventId);
     }
 
     public DbOperation ToEntity(Operation operation)
@@ -25,16 +26,15 @@ internal sealed class OperationMapper
             Amount = operation.Amount,
             Currency = operation.Currency,
             Description = operation.Description,
-            Status = operation.Status
+            Status = operation.Status,
+            LastEventId = operation.LastEventId
         };
     }
 
     public void Apply(Operation operation, DbOperation dbOperation)
     {
         dbOperation.ProviderPaymentId = operation.ProviderPaymentId;
-        dbOperation.Amount = operation.Amount;
-        dbOperation.Currency = operation.Currency;
-        dbOperation.Description = operation.Description;
         dbOperation.Status = operation.Status;
+        dbOperation.LastEventId = operation.LastEventId;
     }
 }

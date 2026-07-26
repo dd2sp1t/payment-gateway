@@ -17,4 +17,8 @@ internal sealed class DbOperation : DbEntity
     public OperationStatus Status { get; set; }
 
     public uint Version { get; set; }
+
+    public long LastEventId { get; set; }
+
+    public ICollection<DbOperationEvent> OperationEvents { get; set; } = [];
 }

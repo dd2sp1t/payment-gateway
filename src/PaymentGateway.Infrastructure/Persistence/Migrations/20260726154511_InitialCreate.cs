@@ -22,6 +22,7 @@ namespace PaymentGateway.Infrastructure.Persistence.Migrations
                     Description = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: false),
                     Status = table.Column<string>(type: "character varying(16)", maxLength: 16, nullable: false),
                     xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false),
+                    LastEventId = table.Column<long>(type: "bigint", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
@@ -30,8 +31,33 @@ namespace PaymentGateway.Infrastructure.Persistence.Migrations
                     table.PrimaryKey("pk_operations", x => x.OperationId);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "operation_events",
+                columns: table => new
+                {
+                    OperationId = table.Column<string>(type: "character varying(128)", nullable: false),
+                    EventId = table.Column<long>(type: "bigint", nullable: false),
+                    Type = table.Column<string>(type: "character varying(16)", maxLength: 16, nullable: false),
+                    FromStatus = table.Column<string>(type: "character varying(16)", maxLength: 16, nullable: true),
+                    ToStatus = table.Column<string>(type: "character varying(16)", maxLength: 16, nullable: false),
+                    Message = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: false),
+                    OccurredAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_operation_events", x => new { x.OperationId, x.EventId });
+                    table.ForeignKey(
+                        name: "fk_operation_events_operations_operationid",
+                        column: x => x.OperationId,
+                        principalTable: "operations",
+                        principalColumn: "OperationId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
-                name: "ux_operations_provider_payment_id",
+                name: "ux_operations_providerpaymentid",
                 table: "operations",
                 column: "ProviderPaymentId",
                 unique: true);
@@ -40,6 +66,9 @@ namespace PaymentGateway.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "operation_events");
+
             migrationBuilder.DropTable(
                 name: "operations");
         }

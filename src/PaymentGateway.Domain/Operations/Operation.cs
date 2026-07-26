@@ -4,6 +4,12 @@ namespace PaymentGateway.Domain.Operations;
 
 public sealed class Operation
 {
+    #region Fields
+
+    private readonly List<OperationEvent> _uncommittedEvents = [];
+
+    #endregion
+
     #region Properties
 
     public OperationId OperationId { get; }
@@ -18,6 +24,10 @@ public sealed class Operation
 
     public OperationStatus Status { get; private set; }
 
+    public long LastEventId { get; private set; }
+
+    public IReadOnlyList<OperationEvent> UncommittedEvents => _uncommittedEvents;
+
     #endregion
 
     #region Constructors
@@ -28,7 +38,8 @@ public sealed class Operation
         decimal amount,
         string currency,
         string description,
-        OperationStatus status)
+        OperationStatus status,
+        long lastEventId)
     {
         OperationId = operationId;
         ProviderPaymentId = providerPaymentId;
@@ -36,6 +47,7 @@ public sealed class Operation
         Currency = currency;
         Description = description;
         Status = status;
+        LastEventId = lastEventId;
     }
 
     #endregion
@@ -68,13 +80,22 @@ public sealed class Operation
             throw new DomainException("Description is required.");
         }
 
-        return new Operation(
+        var operation = new Operation(
             operationId,
             providerPaymentId: null,
             amount,
             currency,
             description,
-            OperationStatus.Created);
+            status: OperationStatus.Created,
+            lastEventId: 0);
+
+        operation.AddEvent(
+            type: OperationEventType.Created,
+            fromStatus: null,
+            toStatus: OperationStatus.Created,
+            message: "Operation created");
+
+        return operation;
     }
 
     internal static Operation Restore(
@@ -83,7 +104,8 @@ public sealed class Operation
         decimal amount,
         string currency,
         string description,
-        OperationStatus status)
+        OperationStatus status,
+        long lastEventId)
     {
         return new Operation(
             operationId,
@@ -91,7 +113,8 @@ public sealed class Operation
             amount,
             currency,
             description,
-            status);
+            status,
+            lastEventId);
     }
 
     #endregion
@@ -107,32 +130,53 @@ public sealed class Operation
         }
 
         Status = OperationStatus.Processing;
+
+        AddEvent(
+            type: OperationEventType.Processing,
+            fromStatus: OperationStatus.Created,
+            toStatus: OperationStatus.Processing,
+            message: "Operation processing started");
     }
 
     public void Complete(Guid providerPaymentId)
     {
         if (Status != OperationStatus.Processing)
         {
-            throw new DomainException(
-                $"Operation '{OperationId}' cannot be completed from '{Status}'.");
+            throw new DomainException($"Operation '{OperationId}' cannot be completed from '{Status}'.");
         }
 
         SetProviderPaymentId(providerPaymentId);
 
         Status = OperationStatus.Completed;
+
+        AddEvent(
+            type: OperationEventType.Completed,
+            fromStatus: OperationStatus.Processing,
+            toStatus: OperationStatus.Completed,
+            message: "Operation completed");
     }
 
     public void Reject(Guid providerPaymentId)
     {
         if (Status != OperationStatus.Processing)
         {
-            throw new DomainException(
-                $"Operation '{OperationId}' cannot be rejected from '{Status}'.");
+            throw new DomainException($"Operation '{OperationId}' cannot be rejected from '{Status}'.");
         }
 
         SetProviderPaymentId(providerPaymentId);
 
         Status = OperationStatus.Rejected;
+
+        AddEvent(
+            type: OperationEventType.Rejected,
+            fromStatus: OperationStatus.Processing,
+            toStatus: OperationStatus.Rejected,
+            message: "Operation rejected");
+    }
+
+    public void ClearUncommittedEvents()
+    {
+        _uncommittedEvents.Clear();
     }
 
     #endregion
@@ -148,6 +192,16 @@ public sealed class Operation
         }
 
         ProviderPaymentId ??= providerPaymentId;
+    }
+
+    private void AddEvent(
+        OperationEventType type,
+        OperationStatus? fromStatus,
+        OperationStatus toStatus,
+        string message)
+    {
+        var @event = OperationEvent.Create(OperationId, ++LastEventId, type, fromStatus, toStatus, message);
+        _uncommittedEvents.Add(@event);
     }
 
     #endregion
