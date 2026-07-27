@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace PaymentGateway.Application.Operations.SubmitOperation;
+namespace PaymentGateway.Application.Operations.Commands.SubmitOperation;
 
 internal sealed class SubmitOperationCommandValidator : AbstractValidator<SubmitOperationCommand>
 {

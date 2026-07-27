@@ -1,11 +1,11 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using PaymentGateway.Application.Abstractions.Persistence.ReadModels;
-using PaymentGateway.Application.Operations.CreateOperation;
+using PaymentGateway.Application.Operations.Commands.CreateOperation;
+using PaymentGateway.Application.Operations.Commands.SubmitOperation;
 using PaymentGateway.Application.Operations.Models;
 using PaymentGateway.Application.Operations.Queries.GetOperation;
 using PaymentGateway.Application.Operations.Queries.GetOperationEvents;
-using PaymentGateway.Application.Operations.SubmitOperation;
 
 namespace PaymentGateway.Api.Controllers;
 

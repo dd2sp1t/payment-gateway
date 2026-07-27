@@ -8,7 +8,7 @@ using PaymentGateway.Application.Exceptions;
 using PaymentGateway.Application.Extensions;
 using PaymentGateway.Domain.Operations;
 
-namespace PaymentGateway.Application.Operations.DispatchOperation;
+namespace PaymentGateway.Application.Operations.Commands.DispatchOperation;
 
 internal sealed class DispatchOperationCommandHandler : IRequestHandler<DispatchOperationCommand>
 {

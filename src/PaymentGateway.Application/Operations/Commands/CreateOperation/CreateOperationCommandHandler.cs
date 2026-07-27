@@ -6,7 +6,7 @@ using PaymentGateway.Application.Extensions;
 using PaymentGateway.Application.Operations.Models;
 using PaymentGateway.Domain.Operations;
 
-namespace PaymentGateway.Application.Operations.CreateOperation;
+namespace PaymentGateway.Application.Operations.Commands.CreateOperation;
 
 internal sealed class CreateOperationCommandHandler : IRequestHandler<CreateOperationCommand, OperationResponse>
 {

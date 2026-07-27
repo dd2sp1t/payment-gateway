@@ -1,7 +1,7 @@
 using MediatR;
 using PaymentGateway.Domain.Operations;
 
-namespace PaymentGateway.Application.Operations.ProcessReceipt;
+namespace PaymentGateway.Application.Operations.Commands.ProcessReceipt;
 
 public sealed record ProcessReceiptCommand(
     Guid ProviderPaymentId,

@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace PaymentGateway.Application.Operations.ProcessReceipt;
+namespace PaymentGateway.Application.Operations.Commands.ProcessReceipt;
 
 internal sealed class ProcessReceiptCommandValidator : AbstractValidator<ProcessReceiptCommand>
 {

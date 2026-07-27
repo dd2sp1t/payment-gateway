@@ -2,7 +2,7 @@ using System.Globalization;
 using FluentValidation;
 using PaymentGateway.Domain.Operations;
 
-namespace PaymentGateway.Application.Operations.CreateOperation;
+namespace PaymentGateway.Application.Operations.Commands.CreateOperation;
 
 internal sealed class CreateOperationCommandValidator : AbstractValidator<CreateOperationCommand>
 {

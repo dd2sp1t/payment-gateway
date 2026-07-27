@@ -1,6 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using PaymentGateway.Application.Operations.ProcessReceipt;
+using PaymentGateway.Application.Operations.Commands.ProcessReceipt;
 
 namespace PaymentGateway.Api.Controllers;
 

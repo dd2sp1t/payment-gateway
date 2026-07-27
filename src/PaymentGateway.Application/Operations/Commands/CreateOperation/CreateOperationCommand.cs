@@ -1,7 +1,7 @@
 using MediatR;
 using PaymentGateway.Application.Operations.Models;
 
-namespace PaymentGateway.Application.Operations.CreateOperation;
+namespace PaymentGateway.Application.Operations.Commands.CreateOperation;
 
 public sealed record CreateOperationCommand(
     string OperationId,

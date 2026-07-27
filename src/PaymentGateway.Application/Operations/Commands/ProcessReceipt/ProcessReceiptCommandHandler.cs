@@ -5,7 +5,7 @@ using PaymentGateway.Application.Abstractions.Persistence.Repositories;
 using PaymentGateway.Application.Exceptions;
 using PaymentGateway.Domain.Operations;
 
-namespace PaymentGateway.Application.Operations.ProcessReceipt;
+namespace PaymentGateway.Application.Operations.Commands.ProcessReceipt;
 
 internal sealed class ProcessReceiptCommandHandler : IRequestHandler<ProcessReceiptCommand>
 {

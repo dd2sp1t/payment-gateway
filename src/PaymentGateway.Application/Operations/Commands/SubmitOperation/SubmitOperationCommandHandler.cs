@@ -4,7 +4,7 @@ using PaymentGateway.Application.Abstractions.Persistence.Repositories;
 using PaymentGateway.Application.Exceptions;
 using PaymentGateway.Domain.Operations;
 
-namespace PaymentGateway.Application.Operations.SubmitOperation;
+namespace PaymentGateway.Application.Operations.Commands.SubmitOperation;
 
 internal sealed class SubmitOperationCommandHandler : IRequestHandler<SubmitOperationCommand, SubmitOperationResponse>
 {

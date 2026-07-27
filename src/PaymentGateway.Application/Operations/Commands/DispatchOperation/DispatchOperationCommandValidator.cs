@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace PaymentGateway.Application.Operations.DispatchOperation;
+namespace PaymentGateway.Application.Operations.Commands.DispatchOperation;
 
 internal sealed class DispatchOperationCommandValidator : AbstractValidator<DispatchOperationCommand>
 {

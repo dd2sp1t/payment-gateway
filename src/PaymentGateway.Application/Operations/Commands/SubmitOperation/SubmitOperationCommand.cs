@@ -1,5 +1,5 @@
 using MediatR;
 
-namespace PaymentGateway.Application.Operations.SubmitOperation;
+namespace PaymentGateway.Application.Operations.Commands.SubmitOperation;
 
 public sealed record SubmitOperationCommand(string OperationId) : IRequest<SubmitOperationResponse>;
