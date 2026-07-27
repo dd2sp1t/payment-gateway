@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PaymentGateway.Application.Abstractions.Persistence.ReadRepositories;
-using PaymentGateway.Application.Operations.DispatchOperation;
+using PaymentGateway.Application.Operations.Commands.DispatchOperation;
 using PaymentGateway.Domain.Operations;
 
 namespace PaymentGateway.Application.Abstractions.BackgroundServices.DispatchOperations;
