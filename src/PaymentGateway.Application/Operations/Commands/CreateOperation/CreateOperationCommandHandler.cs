@@ -1,5 +1,6 @@
 using System.Globalization;
 using MediatR;
+using Microsoft.Extensions.Logging;
 using PaymentGateway.Application.Abstractions.Persistence;
 using PaymentGateway.Application.Abstractions.Persistence.Repositories;
 using PaymentGateway.Application.Extensions;
@@ -10,13 +11,16 @@ namespace PaymentGateway.Application.Operations.Commands.CreateOperation;
 
 internal sealed class CreateOperationCommandHandler : IRequestHandler<CreateOperationCommand, OperationResponse>
 {
+    private readonly ILogger<CreateOperationCommandHandler> _logger;
     private readonly IOperationRepository _operationRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public CreateOperationCommandHandler(
+        ILogger<CreateOperationCommandHandler> logger,
         IOperationRepository operationRepository,
         IUnitOfWork unitOfWork)
     {
+        _logger = logger;
         _operationRepository = operationRepository;
         _unitOfWork = unitOfWork;
     }
@@ -32,6 +36,12 @@ internal sealed class CreateOperationCommandHandler : IRequestHandler<CreateOper
         _operationRepository.Add(operation);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation(
+            "Operation created. OperationId={OperationId} Amount={Amount} Currency={Currency}",
+            operation.OperationId,
+            operation.Amount,
+            operation.Currency);
 
         operation.ClearUncommittedEvents();
 

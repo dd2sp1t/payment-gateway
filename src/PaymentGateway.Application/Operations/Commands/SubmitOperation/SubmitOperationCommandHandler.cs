@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.Extensions.Logging;
 using PaymentGateway.Application.Abstractions.Persistence;
 using PaymentGateway.Application.Abstractions.Persistence.Repositories;
 using PaymentGateway.Application.Exceptions;
@@ -8,11 +9,16 @@ namespace PaymentGateway.Application.Operations.Commands.SubmitOperation;
 
 internal sealed class SubmitOperationCommandHandler : IRequestHandler<SubmitOperationCommand, SubmitOperationResponse>
 {
+    private readonly ILogger<SubmitOperationCommandHandler> _logger;
     private readonly IOperationRepository _operationRepository;
     private readonly IUnitOfWork _unitOfWork;
 
-    public SubmitOperationCommandHandler(IOperationRepository operationRepository, IUnitOfWork unitOfWork)
+    public SubmitOperationCommandHandler(
+        ILogger<SubmitOperationCommandHandler> logger,
+        IOperationRepository operationRepository,
+        IUnitOfWork unitOfWork)
     {
+        _logger = logger;
         _operationRepository = operationRepository;
         _unitOfWork = unitOfWork;
     }
@@ -25,6 +31,10 @@ internal sealed class SubmitOperationCommandHandler : IRequestHandler<SubmitOper
 
         if (operation is null)
         {
+            _logger.LogWarning(
+                "Submit skipped. Operation not found. OperationId={OperationId}",
+                request.OperationId);
+
             throw new NotFoundException($"Operation '{request.OperationId}' was not found.");
         }
 
@@ -40,6 +50,11 @@ internal sealed class SubmitOperationCommandHandler : IRequestHandler<SubmitOper
     {
         if (operation.Status != OperationStatus.Created)
         {
+            _logger.LogDebug(
+                "Submit skipped. OperationId={OperationId} Status={Status}",
+                operation.OperationId,
+                operation.Status);
+
             return (operation, NewlyScheduled: false);
         }
 
@@ -48,7 +63,12 @@ internal sealed class SubmitOperationCommandHandler : IRequestHandler<SubmitOper
             operation.Submit();
 
             await _operationRepository.UpdateAsync(operation, cancellationToken);
+
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation(
+                "Operation submitted. OperationId={OperationId}",
+                operation.OperationId);
 
             operation.ClearUncommittedEvents();
 
@@ -56,6 +76,10 @@ internal sealed class SubmitOperationCommandHandler : IRequestHandler<SubmitOper
         }
         catch (ConcurrencyException)
         {
+            _logger.LogInformation(
+                "Operation was submitted concurrently. OperationId={OperationId}",
+                operation.OperationId);
+
             var actual = await _operationRepository.GetAsync(operation.OperationId, cancellationToken);
 
             return (actual!, NewlyScheduled: false);

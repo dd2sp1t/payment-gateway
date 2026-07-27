@@ -16,7 +16,11 @@ internal abstract class PeriodicBackgroundService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("{ServiceName} started.", GetType().Name);
+        var serviceName = GetType().Name;
+
+        _logger.LogInformation(
+            "Service started. ServiceName={ServiceName}",
+            serviceName);
 
         while (stoppingToken.IsCancellationRequested == false)
         {
@@ -26,13 +30,18 @@ internal abstract class PeriodicBackgroundService : BackgroundService
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, "{ServiceName} iteration failed.", GetType().Name);
+                _logger.LogError(
+                    exception,
+                    "Service iteration failed. ServiceName={ServiceName}",
+                    serviceName);
             }
 
             await Task.Delay(_interval, stoppingToken);
         }
 
-        _logger.LogInformation("{ServiceName} stopped.", GetType().Name);
+        _logger.LogInformation(
+            "Service stopped. ServiceName={ServiceName}",
+            serviceName);
     }
 
     protected abstract Task ExecuteIterationAsync(CancellationToken cancellationToken);

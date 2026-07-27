@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.Extensions.Logging;
 using PaymentGateway.Application.Abstractions.Persistence;
 using PaymentGateway.Application.Abstractions.Persistence.ReadRepositories;
 using PaymentGateway.Application.Abstractions.Persistence.Repositories;
@@ -9,15 +10,18 @@ namespace PaymentGateway.Application.Operations.Commands.ProcessReceipt;
 
 internal sealed class ProcessReceiptCommandHandler : IRequestHandler<ProcessReceiptCommand>
 {
+    private readonly ILogger<ProcessReceiptCommandHandler> _logger;
     private readonly IOperationReadRepository _operationReadRepository;
     private readonly IOperationRepository _operationRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public ProcessReceiptCommandHandler(
+        ILogger<ProcessReceiptCommandHandler> logger,
         IOperationReadRepository operationReadRepository,
         IOperationRepository operationRepository,
         IUnitOfWork unitOfWork)
     {
+        _logger = logger;
         _operationReadRepository = operationReadRepository;
         _operationRepository = operationRepository;
         _unitOfWork = unitOfWork;
@@ -25,6 +29,12 @@ internal sealed class ProcessReceiptCommandHandler : IRequestHandler<ProcessRece
 
     public async Task Handle(ProcessReceiptCommand request, CancellationToken cancellationToken)
     {
+        _logger.LogInformation(
+            "Receipt received. OperationId={OperationId} ProviderPaymentId={ProviderPaymentId} Result={Result}",
+            request.OperationId,
+            request.ProviderPaymentId,
+            request.Result);
+
         var operationId = (OperationId)request.OperationId;
 
         var isProcessed = await _operationReadRepository.IsReceiptProcessedAsync(
@@ -35,15 +45,22 @@ internal sealed class ProcessReceiptCommandHandler : IRequestHandler<ProcessRece
 
         if (isProcessed)
         {
+            _logger.LogDebug(
+                "Receipt ignored because it has already been processed. OperationId={OperationId} ProviderPaymentId={ProviderPaymentId}",
+                request.OperationId,
+                request.ProviderPaymentId);
+
             return;
         }
 
-        var operation = await _operationRepository.GetAsync(
-            operationId,
-            cancellationToken);
+        var operation = await _operationRepository.GetAsync(operationId, cancellationToken);
 
         if (operation is null)
         {
+            _logger.LogWarning(
+                "Receipt cannot be processed because operation was not found. OperationId={OperationId}",
+                request.OperationId);
+
             throw new NotFoundException($"Operation '{request.OperationId}' was not found.");
         }
 
@@ -65,10 +82,20 @@ internal sealed class ProcessReceiptCommandHandler : IRequestHandler<ProcessRece
         catch (DuplicateResourceException exception)
             when (exception.Resource == nameof(Receipt))
         {
+            _logger.LogInformation(
+                "Receipt was processed concurrently. OperationId={OperationId} ProviderPaymentId={ProviderPaymentId}",
+                request.OperationId,
+                request.ProviderPaymentId);
+
             return;
         }
 
         operation.ClearUncommittedEvents();
         operation.ClearUncommittedReceipts();
+
+        _logger.LogInformation(
+            "Receipt processed. OperationId={OperationId} Status={Status}",
+            operation.OperationId,
+            operation.Status);
     }
 }

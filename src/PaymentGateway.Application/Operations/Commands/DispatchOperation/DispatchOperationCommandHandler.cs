@@ -45,7 +45,9 @@ internal sealed class DispatchOperationCommandHandler : IRequestHandler<Dispatch
 
             if (operation is null)
             {
-                _logger.LogWarning("Operation '{OperationId}' was not found.", request.OperationId);
+                _logger.LogWarning(
+                    "Operation not found. OperationId={OperationId}",
+                    request.OperationId);
 
                 return;
             }
@@ -53,7 +55,7 @@ internal sealed class DispatchOperationCommandHandler : IRequestHandler<Dispatch
             if (operation.Status != OperationStatus.Processing)
             {
                 _logger.LogDebug(
-                    "Dispatch skipped for operation '{OperationId}'. Status: '{Status}'. RetryCount: {RetryCount}. Next dispatch at: {NextDispatchAt}.",
+                    "Dispatch skipped. OperationId={OperationId} Status={Status} RetryCount={RetryCount} NextDispatchAt={NextDispatchAt}",
                     operation.OperationId,
                     operation.Status,
                     operation.RetryCount,
@@ -70,8 +72,9 @@ internal sealed class DispatchOperationCommandHandler : IRequestHandler<Dispatch
             }
             catch (ConcurrencyException)
             {
+                // TODO:
                 _logger.LogInformation(
-                    "Operation '{OperationId}' was updated concurrently. Reloading operation ({Attempt}/{MaxAttempts}).",
+                    "Concurrency conflict. Reloading operation. OperationId={OperationId} Attempt={Attempt} MaxAttempts={MaxAttempts}",
                     operation.OperationId,
                     concurrencyAttempt + 1,
                     MaxConcurrencyRetries);
@@ -106,7 +109,7 @@ internal sealed class DispatchOperationCommandHandler : IRequestHandler<Dispatch
         catch (Exception exception)
         {
             _logger.LogError(
-                exception, "Dispatch failed for operation '{OperationId}'. RetryCount: {RetryCount}.",
+                exception, "Dispatch started. OperationId={OperationId} RetryCount={RetryCount}",
                 operation.OperationId,
                 operation.RetryCount);
 
@@ -127,7 +130,7 @@ internal sealed class DispatchOperationCommandHandler : IRequestHandler<Dispatch
 
             _logger.LogError(
                 exception,
-                "Dispatch failed for operation '{OperationId}'. Retry limit reached after {RetryCount} attempts.",
+                "Dispatch failed. OperationId={OperationId} RetryCount={RetryCount}",
                 operation.OperationId,
                 operation.RetryCount);
 
@@ -142,7 +145,7 @@ internal sealed class DispatchOperationCommandHandler : IRequestHandler<Dispatch
 
         _logger.LogWarning(
             exception,
-            "Dispatch failed for operation '{OperationId}'. Retry attempt {RetryCount} scheduled at {NextDispatchAt}.",
+            "Dispatch retry scheduled. OperationId={OperationId} RetryCount={RetryCount} NextDispatchAt={NextDispatchAt}",
             operation.OperationId,
             operation.RetryCount,
             operation.NextDispatchAt);
