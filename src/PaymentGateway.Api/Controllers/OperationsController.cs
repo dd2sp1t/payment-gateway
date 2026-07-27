@@ -1,8 +1,10 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using PaymentGateway.Application.Abstractions.Persistence.ReadModels;
 using PaymentGateway.Application.Operations.CreateOperation;
 using PaymentGateway.Application.Operations.Models;
 using PaymentGateway.Application.Operations.Queries.GetOperation;
+using PaymentGateway.Application.Operations.Queries.GetOperationEvents;
 using PaymentGateway.Application.Operations.SubmitOperation;
 
 namespace PaymentGateway.Api.Controllers;
@@ -62,6 +64,20 @@ public sealed class OperationsController : ControllerBase
         CancellationToken cancellationToken)
     {
         var response = await _sender.Send(new GetOperationQuery(operationId), cancellationToken);
+
+        return Ok(response);
+    }
+
+    [HttpGet("{operationId}/events")]
+    [ProducesResponseType<IReadOnlyList<OperationEventReadModel>>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<IReadOnlyList<OperationEventReadModel>>> GetOperationEvents(
+        [FromRoute] string operationId,
+        CancellationToken cancellationToken)
+    {
+        var response = await _sender.Send(new GetOperationEventsQuery(operationId), cancellationToken);
 
         return Ok(response);
     }

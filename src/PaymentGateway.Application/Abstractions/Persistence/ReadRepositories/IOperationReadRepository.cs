@@ -14,4 +14,8 @@ public interface IOperationReadRepository
         CancellationToken cancellationToken);
 
     Task<OperationReadModel?> GetOperationAsync(OperationId operationId, CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<OperationEventReadModel>> GetOperationEventsAsync(
+        OperationId operationId,
+        CancellationToken cancellationToken);
 }

@@ -56,4 +56,22 @@ internal sealed class OperationReadRepository : IOperationReadRepository
                 x.ProviderPaymentId))
             .SingleOrDefaultAsync(cancellationToken);
     }
+
+    public async Task<IReadOnlyList<OperationEventReadModel>> GetOperationEventsAsync(
+        OperationId operationId,
+        CancellationToken cancellationToken)
+    {
+        return await _dbContext.OperationEvents
+            .AsNoTracking()
+            .Where(x => x.OperationId == operationId)
+            .OrderBy(x => x.EventId)
+            .Select(x => new OperationEventReadModel(
+                x.EventId,
+                x.Type,
+                x.FromStatus,
+                x.ToStatus,
+                x.Message,
+                x.OccurredAt))
+            .ToListAsync(cancellationToken);
+    }
 }
