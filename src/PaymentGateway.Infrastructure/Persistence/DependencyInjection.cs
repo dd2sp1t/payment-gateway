@@ -7,6 +7,7 @@ using PaymentGateway.Application.Abstractions.Persistence.Repositories;
 using PaymentGateway.Infrastructure.Persistence.Mappers;
 using PaymentGateway.Infrastructure.Persistence.ReadRepositories;
 using PaymentGateway.Infrastructure.Persistence.Repositories;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace PaymentGateway.Infrastructure.Persistence;
 
@@ -36,6 +37,10 @@ public static class DependencyInjection
         services.AddScoped<IOperationReadRepository, OperationReadRepository>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        services
+            .AddHealthChecks()
+            .AddDbContextCheck<PaymentGatewayDbContext>();
 
         return services;
     }

@@ -20,6 +20,9 @@ builder.Services
         options.JsonSerializerOptions.Converters.Add(new UpperCaseEnumConverterFactory());
     });
 
+builder.Services
+    .AddHealthChecks();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -31,5 +34,7 @@ app.UseSwaggerUI();
 app.UseExceptionHandler();
 
 app.MapControllers();
+
+app.MapHealthChecks("/health");
 
 app.Run();
