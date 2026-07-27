@@ -1,11 +1,14 @@
+using System.Globalization;
 using MediatR;
 using PaymentGateway.Application.Abstractions.Persistence;
 using PaymentGateway.Application.Abstractions.Persistence.Repositories;
+using PaymentGateway.Application.Extensions;
+using PaymentGateway.Application.Operations.Models;
 using PaymentGateway.Domain.Operations;
 
 namespace PaymentGateway.Application.Operations.CreateOperation;
 
-internal sealed class CreateOperationCommandHandler : IRequestHandler<CreateOperationCommand, CreateOperationResponse>
+internal sealed class CreateOperationCommandHandler : IRequestHandler<CreateOperationCommand, OperationResponse>
 {
     private readonly IOperationRepository _operationRepository;
     private readonly IUnitOfWork _unitOfWork;
@@ -18,13 +21,11 @@ internal sealed class CreateOperationCommandHandler : IRequestHandler<CreateOper
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<CreateOperationResponse> Handle(
-        CreateOperationCommand request,
-        CancellationToken cancellationToken)
+    public async Task<OperationResponse> Handle(CreateOperationCommand request, CancellationToken cancellationToken)
     {
         var operation = Operation.Create(
             (OperationId)request.OperationId,
-            request.Amount,
+            amount: decimal.Parse(request.Amount, NumberStyles.Number, CultureInfo.InvariantCulture),
             request.Currency,
             request.Description);
 
@@ -34,6 +35,12 @@ internal sealed class CreateOperationCommandHandler : IRequestHandler<CreateOper
 
         operation.ClearUncommittedEvents();
 
-        return new CreateOperationResponse(operation.OperationId, operation.Status);
+        return new OperationResponse(
+            operation.OperationId,
+            operation.Amount.ToInvariantString(),
+            operation.Currency,
+            operation.Description,
+            operation.Status,
+            operation.ProviderPaymentId);
     }
 }

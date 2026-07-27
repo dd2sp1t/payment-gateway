@@ -1,4 +1,3 @@
-using System.Globalization;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using PaymentGateway.Application.Abstractions.PaymentProvider;
@@ -6,6 +5,7 @@ using PaymentGateway.Application.Abstractions.PaymentProvider.Models;
 using PaymentGateway.Application.Abstractions.Persistence;
 using PaymentGateway.Application.Abstractions.Persistence.Repositories;
 using PaymentGateway.Application.Exceptions;
+using PaymentGateway.Application.Extensions;
 using PaymentGateway.Domain.Operations;
 
 namespace PaymentGateway.Application.Operations.DispatchOperation;
@@ -52,7 +52,7 @@ internal sealed class DispatchOperationCommandHandler : IRequestHandler<Dispatch
 
         var providerRequest = new SubmitPaymentRequest(
             operation.OperationId,
-            operation.Amount.ToString("0.00", CultureInfo.InvariantCulture),
+            operation.Amount.ToInvariantString(),
             operation.Currency);
 
         var providerResponse = await _paymentProviderClient.SubmitAsync(providerRequest, cancellationToken);

@@ -25,6 +25,7 @@ internal sealed class PaymentProviderClient : IPaymentProviderClient
         _httpClient = httpClient;
         _logger = logger;
     }
+
     public async Task<SubmitPaymentResponse> SubmitAsync(
         SubmitPaymentRequest request,
         CancellationToken cancellationToken)

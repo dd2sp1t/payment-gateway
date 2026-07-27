@@ -1,6 +1,8 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using PaymentGateway.Application.Operations.CreateOperation;
+using PaymentGateway.Application.Operations.Models;
+using PaymentGateway.Application.Operations.Queries.GetOperation;
 using PaymentGateway.Application.Operations.SubmitOperation;
 
 namespace PaymentGateway.Api.Controllers;
@@ -17,17 +19,20 @@ public sealed class OperationsController : ControllerBase
     }
 
     [HttpPost]
-    [ProducesResponseType<CreateOperationResponse>(StatusCodes.Status201Created)]
+    [ProducesResponseType<OperationResponse>(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<CreateOperationResponse>> Create(
+    public async Task<ActionResult<OperationResponse>> Create(
         [FromBody] CreateOperationCommand command,
         CancellationToken cancellationToken)
     {
         var response = await _sender.Send(command, cancellationToken);
 
-        return Created(string.Empty, response);
+        return CreatedAtAction(
+            nameof(Get),
+            new { operationId = response.OperationId },
+            response);
     }
 
     [HttpPost("{operationId}/submit")]
@@ -45,5 +50,19 @@ public sealed class OperationsController : ControllerBase
         return response.NewlyScheduled
             ? Accepted(response)
             : Ok(response);
+    }
+
+    [HttpGet("{operationId}")]
+    [ProducesResponseType<OperationResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<OperationResponse>> Get(
+        [FromRoute] string operationId,
+        CancellationToken cancellationToken)
+    {
+        var response = await _sender.Send(new GetOperationQuery(operationId), cancellationToken);
+
+        return Ok(response);
     }
 }

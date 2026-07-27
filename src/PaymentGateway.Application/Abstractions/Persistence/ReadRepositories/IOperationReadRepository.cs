@@ -1,5 +1,6 @@
 namespace PaymentGateway.Application.Abstractions.Persistence.ReadRepositories;
 
+using PaymentGateway.Application.Abstractions.Persistence.ReadModels;
 using PaymentGateway.Domain.Operations;
 
 public interface IOperationReadRepository
@@ -11,4 +12,6 @@ public interface IOperationReadRepository
         Guid providerPaymentId,
         ReceiptResult result,
         CancellationToken cancellationToken);
+
+    Task<OperationReadModel?> GetOperationAsync(OperationId operationId, CancellationToken cancellationToken);
 }

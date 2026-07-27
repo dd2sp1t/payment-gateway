@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using PaymentGateway.Application.Abstractions.Persistence.ReadModels;
 using PaymentGateway.Application.Abstractions.Persistence.ReadRepositories;
 using PaymentGateway.Domain.Operations;
 
@@ -37,5 +38,22 @@ internal sealed class OperationReadRepository : IOperationReadRepository
                 && x.ProviderPaymentId == providerPaymentId
                 && x.Result == result,
              cancellationToken);
+    }
+
+    public async Task<OperationReadModel?> GetOperationAsync(
+        OperationId operationId,
+        CancellationToken cancellationToken)
+    {
+        return await _dbContext.Operations
+            .AsNoTracking()
+            .Where(x => x.OperationId == operationId)
+            .Select(x => new OperationReadModel(
+                (OperationId)x.OperationId,
+                x.Amount,
+                x.Currency,
+                x.Description,
+                x.Status,
+                x.ProviderPaymentId))
+            .SingleOrDefaultAsync(cancellationToken);
     }
 }
