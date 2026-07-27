@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using PaymentGateway.Infrastructure.Dispatch;
 using PaymentGateway.Infrastructure.PaymentProvider;
 using PaymentGateway.Infrastructure.Persistence;
 
@@ -11,7 +12,8 @@ public static class DependencyInjection
     {
         services
             .AddPersistence(configuration)
-            .AddPaymentProvider(configuration);
+            .AddPaymentProvider(configuration)
+            .AddDispatch(configuration);
 
         return services;
     }

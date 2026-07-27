@@ -14,6 +14,8 @@ internal sealed class OperationMapper
             currency: dbOperation.Currency,
             description: dbOperation.Description,
             status: dbOperation.Status,
+            retryCount: dbOperation.RetryCount,
+            nextDispatchAt: dbOperation.NextDispatchAt,
             lastEventId: dbOperation.LastEventId);
     }
 
@@ -27,6 +29,8 @@ internal sealed class OperationMapper
             Currency = operation.Currency,
             Description = operation.Description,
             Status = operation.Status,
+            RetryCount = operation.RetryCount,
+            NextDispatchAt = operation.NextDispatchAt,
             LastEventId = operation.LastEventId
         };
     }
@@ -35,6 +39,8 @@ internal sealed class OperationMapper
     {
         dbOperation.ProviderPaymentId = operation.ProviderPaymentId;
         dbOperation.Status = operation.Status;
+        dbOperation.RetryCount = operation.RetryCount;
+        dbOperation.NextDispatchAt = operation.NextDispatchAt;
         dbOperation.LastEventId = operation.LastEventId;
     }
 }

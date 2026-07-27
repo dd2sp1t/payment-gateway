@@ -47,6 +47,14 @@ internal sealed class DbReceiptConfig : IEntityTypeConfiguration<DbReceipt>
             .IsRequired();
 
         builder
+            .Property(x => x.CreatedAt)
+            .IsRequired();
+
+        builder
+            .Property(x => x.UpdatedAt)
+            .IsRequired();
+
+        builder
             .HasOne(x => x.Operation)
             .WithMany(x => x.Receipts)
             .HasForeignKey(x => x.OperationId)

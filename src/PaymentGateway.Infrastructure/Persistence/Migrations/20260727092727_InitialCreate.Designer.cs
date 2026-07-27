@@ -12,7 +12,7 @@ using PaymentGateway.Infrastructure.Persistence;
 namespace PaymentGateway.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(PaymentGatewayDbContext))]
-    [Migration("20260727020307_InitialCreate")]
+    [Migration("20260727092727_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -51,8 +51,14 @@ namespace PaymentGateway.Infrastructure.Persistence.Migrations
                     b.Property<long>("LastEventId")
                         .HasColumnType("bigint");
 
+                    b.Property<DateTimeOffset?>("NextDispatchAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<Guid?>("ProviderPaymentId")
                         .HasColumnType("uuid");
+
+                    b.Property<int>("RetryCount")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Status")
                         .IsRequired()

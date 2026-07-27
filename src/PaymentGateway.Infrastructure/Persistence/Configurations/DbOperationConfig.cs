@@ -58,6 +58,14 @@ internal sealed class DbOperationConfig : IEntityTypeConfiguration<DbOperation>
             .IsRequired();
 
         builder
+            .Property(x => x.RetryCount)
+            .IsRequired();
+
+        builder
+            .Property(x => x.NextDispatchAt)
+            .IsRequired(false);
+
+        builder
             .Property(x => x.LastEventId)
             .IsRequired();
 

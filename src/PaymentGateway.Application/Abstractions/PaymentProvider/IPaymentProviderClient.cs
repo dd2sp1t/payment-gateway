@@ -4,5 +4,8 @@ namespace PaymentGateway.Application.Abstractions.PaymentProvider;
 
 public interface IPaymentProviderClient
 {
-    Task<SubmitPaymentResponse> SubmitAsync(SubmitPaymentRequest request, CancellationToken cancellationToken);
+    Task<SubmitPaymentResponse> SubmitAsync(
+        SubmitPaymentRequest request,
+        int retryCount,
+        CancellationToken cancellationToken);
 }

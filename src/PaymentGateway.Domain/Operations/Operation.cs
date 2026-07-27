@@ -19,6 +19,8 @@ public sealed class Operation
     public string Currency { get; }
     public string Description { get; }
     public OperationStatus Status { get; private set; }
+    public int RetryCount { get; private set; }
+    public DateTimeOffset? NextDispatchAt { get; private set; }
     public long LastEventId { get; private set; }
     public IReadOnlyList<OperationEvent> UncommittedEvents => _uncommittedEvents;
     public IReadOnlyList<Receipt> UncommittedReceipts => _uncommittedReceipts;
@@ -34,6 +36,8 @@ public sealed class Operation
         string currency,
         string description,
         OperationStatus status,
+        int retryCount,
+        DateTimeOffset? nextDispatchAt,
         long lastEventId)
     {
         OperationId = operationId;
@@ -42,6 +46,8 @@ public sealed class Operation
         Currency = currency;
         Description = description;
         Status = status;
+        RetryCount = retryCount;
+        NextDispatchAt = nextDispatchAt;
         LastEventId = lastEventId;
     }
 
@@ -82,6 +88,8 @@ public sealed class Operation
             currency,
             description,
             status: OperationStatus.Created,
+            retryCount: 0,
+            nextDispatchAt: null,
             lastEventId: 0);
 
         operation.AddEvent(
@@ -100,6 +108,8 @@ public sealed class Operation
         string currency,
         string description,
         OperationStatus status,
+        int retryCount,
+        DateTimeOffset? nextDispatchAt,
         long lastEventId)
     {
         return new Operation(
@@ -109,6 +119,8 @@ public sealed class Operation
             currency,
             description,
             status,
+            retryCount,
+            nextDispatchAt,
             lastEventId);
     }
 
@@ -120,8 +132,7 @@ public sealed class Operation
     {
         if (Status != OperationStatus.Created)
         {
-            throw new DomainException(
-                $"Operation '{OperationId}' cannot be moved from '{Status}' to '{OperationStatus.Processing}'.");
+            throw new DomainException($"Transition from '{Status}' to '{OperationStatus.Processing}' is not allowed.");
         }
 
         Status = OperationStatus.Processing;
@@ -157,8 +168,7 @@ public sealed class Operation
                 break;
 
             default:
-                throw new DomainException(
-                    $"Cannot process receipt for operation '{OperationId}' with status '{Status}'.");
+                throw new DomainException($"Cannot process receipt when operation status is '{Status}'.");
         }
     }
 
@@ -175,6 +185,22 @@ public sealed class Operation
     public void AttachProviderPayment(Guid providerPaymentId)
     {
         SetProviderPaymentId(providerPaymentId);
+    }
+
+    public void ScheduleRetry(DateTimeOffset nextAttempt)
+    {
+        if (Status != OperationStatus.Processing)
+        {
+            throw new DomainException($"Retry is not allowed for operation status '{Status}'.");
+        }
+
+        RetryCount++;
+        NextDispatchAt = nextAttempt;
+    }
+
+    public void StopRetrying()
+    {
+        ClearRetrySchedule();
     }
 
     #endregion
@@ -210,30 +236,39 @@ public sealed class Operation
         _uncommittedReceipts.Add(receipt);
     }
 
+    private void ClearRetrySchedule()
+    {
+        NextDispatchAt = DateTimeOffset.MaxValue;
+    }
+
     private void Complete(Receipt receipt)
     {
-        AddReceipt(receipt);
-
         Status = OperationStatus.Completed;
+
+        AddReceipt(receipt);
 
         AddEvent(
             type: OperationEventType.Completed,
             fromStatus: OperationStatus.Processing,
             toStatus: OperationStatus.Completed,
             message: "Operation completed.");
+
+        ClearRetrySchedule();
     }
 
     private void Reject(Receipt receipt)
     {
-        AddReceipt(receipt);
-
         Status = OperationStatus.Rejected;
+
+        AddReceipt(receipt);
 
         AddEvent(
             type: OperationEventType.Rejected,
             fromStatus: OperationStatus.Processing,
             toStatus: OperationStatus.Rejected,
             message: "Operation rejected.");
+
+        ClearRetrySchedule();
     }
 
     private void Ignore(Receipt receipt)

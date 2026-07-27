@@ -28,8 +28,7 @@ internal sealed class SubmitOperationCommandHandler : IRequestHandler<SubmitOper
             throw new NotFoundException($"Operation '{request.OperationId}' was not found.");
         }
 
-        var newlyScheduled = false;
-
+        bool newlyScheduled;
         (operation, newlyScheduled) = await SubmitIfCreatedAsync(operation, cancellationToken);
 
         return new SubmitOperationResponse(operation.OperationId, operation.Status, newlyScheduled);

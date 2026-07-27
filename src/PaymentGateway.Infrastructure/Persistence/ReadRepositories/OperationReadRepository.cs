@@ -18,10 +18,14 @@ internal sealed class OperationReadRepository : IOperationReadRepository
         int batchSize,
         CancellationToken cancellationToken)
     {
+        var now = DateTimeOffset.UtcNow;
+
         return await _dbContext.Operations
             .AsNoTracking()
-            .Where(x => x.Status == OperationStatus.Processing)
-            .OrderBy(x => x.UpdatedAt)
+            .Where(x => x.Status == OperationStatus.Processing
+                    && (x.NextDispatchAt == null || x.NextDispatchAt <= now))
+            .OrderBy(x => x.NextDispatchAt ?? x.UpdatedAt)
+            .ThenBy(x => x.UpdatedAt)
             .Take(batchSize)
             .Select(x => (OperationId)x.OperationId)
             .ToListAsync(cancellationToken);

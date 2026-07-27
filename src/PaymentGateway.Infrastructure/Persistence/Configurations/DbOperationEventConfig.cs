@@ -55,6 +55,14 @@ internal sealed class DbOperationEventConfig : IEntityTypeConfiguration<DbOperat
             .IsRequired();
 
         builder
+            .Property(x => x.CreatedAt)
+            .IsRequired();
+
+        builder
+            .Property(x => x.UpdatedAt)
+            .IsRequired();
+
+        builder
             .HasOne(x => x.Operation)
             .WithMany(x => x.OperationEvents)
             .HasForeignKey(x => x.OperationId)

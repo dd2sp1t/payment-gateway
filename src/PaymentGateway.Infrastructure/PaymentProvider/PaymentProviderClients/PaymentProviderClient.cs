@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using PaymentGateway.Application.Abstractions.PaymentProvider;
 using PaymentGateway.Application.Abstractions.PaymentProvider.Models;
 
-namespace PaymentGateway.Infrastructure.PaymentProvider;
+namespace PaymentGateway.Infrastructure.PaymentProvider.PaymentProviderClients;
 
 internal sealed class PaymentProviderClient : IPaymentProviderClient
 {
@@ -28,13 +28,15 @@ internal sealed class PaymentProviderClient : IPaymentProviderClient
 
     public async Task<SubmitPaymentResponse> SubmitAsync(
         SubmitPaymentRequest request,
+        int retryCount,
         CancellationToken cancellationToken)
     {
         var requestBody = JsonSerializer.Serialize(request, JsonOptions);
 
         _logger.LogInformation(
-            "Provider request. OperationId={OperationId}. Body={Body}.",
+            "Provider request. OperationId={OperationId}. RetryCount={RetryCount}. Body={Body}.",
             request.OperationId,
+            retryCount,
             requestBody);
 
         using var requestMessage = CreateRequestMessage(request);
@@ -49,8 +51,9 @@ internal sealed class PaymentProviderClient : IPaymentProviderClient
         {
             _logger.LogError(
                 exception,
-                "Provider request failed. OperationId={OperationId}.",
-                request.OperationId);
+                "Provider request failed. OperationId={OperationId}. RetryCount={RetryCount}.",
+                request.OperationId,
+                retryCount);
 
             throw new PaymentProviderException("Provider request failed.", exception);
         }
@@ -60,17 +63,20 @@ internal sealed class PaymentProviderClient : IPaymentProviderClient
         EnsureSuccessStatusCode(
             responseMessage,
             request.OperationId,
+            retryCount,
             responseBody);
 
         _logger.LogInformation(
-            "Provider response. OperationId={OperationId}. StatusCode={StatusCode}. Body={Body}.",
+            "Provider response. OperationId={OperationId}. RetryCount={RetryCount}. StatusCode={StatusCode}. Body={Body}.",
             request.OperationId,
+            retryCount,
             (int)responseMessage.StatusCode,
             responseBody);
 
         var response = await DeserializeResponseAsync(
             responseMessage.Content,
             request.OperationId,
+            retryCount,
             responseBody,
             cancellationToken);
 
@@ -92,6 +98,7 @@ internal sealed class PaymentProviderClient : IPaymentProviderClient
     private void EnsureSuccessStatusCode(
         HttpResponseMessage responseMessage,
         string operationId,
+        int retryAttempt,
         string responseBody)
     {
         if (responseMessage.IsSuccessStatusCode)
@@ -100,8 +107,9 @@ internal sealed class PaymentProviderClient : IPaymentProviderClient
         }
 
         _logger.LogWarning(
-            "Provider returned unsuccessful status. OperationId={OperationId}. StatusCode={StatusCode}. Body={Body}.",
+            "Provider returned unsuccessful status. OperationId={OperationId}. RetryCount={RetryCount}. StatusCode={StatusCode}. Body={Body}.",
             operationId,
+            retryAttempt,
             (int)responseMessage.StatusCode,
             responseBody);
 
@@ -111,6 +119,7 @@ internal sealed class PaymentProviderClient : IPaymentProviderClient
     private async Task<SubmitPaymentResponse> DeserializeResponseAsync(
         HttpContent content,
         string operationId,
+        int retryAttempt,
         string responseBody,
         CancellationToken cancellationToken)
     {
@@ -125,7 +134,10 @@ internal sealed class PaymentProviderClient : IPaymentProviderClient
                 return response;
             }
 
-            _logger.LogWarning("Provider returned empty response. OperationId={OperationId}.", operationId);
+            _logger.LogWarning(
+                "Provider returned empty response. OperationId={OperationId}. RetryCount={RetryCount}.",
+                operationId,
+                retryAttempt);
 
             throw new PaymentProviderException("Provider returned empty response.");
         }
@@ -133,8 +145,9 @@ internal sealed class PaymentProviderClient : IPaymentProviderClient
         {
             _logger.LogError(
                 exception,
-                "Provider response deserialization failed. OperationId={OperationId}. Body={Body}.",
+                "Provider response deserialization failed. OperationId={OperationId}. RetryCount={RetryCount}. Body={Body}.",
                 operationId,
+                retryAttempt,
                 responseBody);
 
             throw new PaymentProviderException("Failed to deserialize provider response.", exception);

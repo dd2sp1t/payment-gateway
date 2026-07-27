@@ -48,8 +48,14 @@ namespace PaymentGateway.Infrastructure.Persistence.Migrations
                     b.Property<long>("LastEventId")
                         .HasColumnType("bigint");
 
+                    b.Property<DateTimeOffset?>("NextDispatchAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<Guid?>("ProviderPaymentId")
                         .HasColumnType("uuid");
+
+                    b.Property<int>("RetryCount")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Status")
                         .IsRequired()
