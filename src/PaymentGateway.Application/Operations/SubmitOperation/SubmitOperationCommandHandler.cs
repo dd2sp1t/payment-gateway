@@ -30,19 +30,36 @@ internal sealed class SubmitOperationCommandHandler : IRequestHandler<SubmitOper
 
         var newlyScheduled = false;
 
-        if (operation.Status == OperationStatus.Created)
+        (operation, newlyScheduled) = await SubmitIfCreatedAsync(operation, cancellationToken);
+
+        return new SubmitOperationResponse(operation.OperationId, operation.Status, newlyScheduled);
+    }
+
+    private async Task<(Operation Operation, bool NewlyScheduled)> SubmitIfCreatedAsync(
+        Operation operation,
+        CancellationToken cancellationToken)
+    {
+        if (operation.Status != OperationStatus.Created)
         {
-            operation.StartProcessing();
+            return (operation, NewlyScheduled: false);
+        }
+
+        try
+        {
+            operation.Submit();
 
             await _operationRepository.UpdateAsync(operation, cancellationToken);
-
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             operation.ClearUncommittedEvents();
 
-            newlyScheduled = true;
+            return (operation, NewlyScheduled: true);
         }
+        catch (ConcurrencyException)
+        {
+            var actual = await _operationRepository.GetAsync(operation.OperationId, cancellationToken);
 
-        return new SubmitOperationResponse(operation.OperationId, operation.Status, newlyScheduled);
+            return (actual!, NewlyScheduled: false);
+        }
     }
 }
