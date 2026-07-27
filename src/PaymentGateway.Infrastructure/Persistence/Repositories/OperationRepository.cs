@@ -11,15 +11,18 @@ internal sealed class OperationRepository : IOperationRepository
     private readonly PaymentGatewayDbContext _dbContext;
     private readonly OperationMapper _operationMapper;
     private readonly OperationEventMapper _operationEventMapper;
+    private readonly ReceiptMapper _receiptMapper;
 
     public OperationRepository(
         PaymentGatewayDbContext dbContext,
         OperationMapper operationMapper,
-        OperationEventMapper operationEventMapper)
+        OperationEventMapper operationEventMapper,
+        ReceiptMapper receiptMapper)
     {
         _dbContext = dbContext;
         _operationMapper = operationMapper;
         _operationEventMapper = operationEventMapper;
+        _receiptMapper = receiptMapper;
     }
 
     public void Add(Operation operation)
@@ -58,6 +61,7 @@ internal sealed class OperationRepository : IOperationRepository
         _operationMapper.Apply(operation, dbOperation);
 
         AddEvents(operation, dbOperation);
+        AddReceipts(operation, dbOperation);
     }
 
     private void AddEvents(Operation operation, DbOperation dbOperation)
@@ -65,6 +69,14 @@ internal sealed class OperationRepository : IOperationRepository
         foreach (var @event in operation.UncommittedEvents)
         {
             dbOperation.OperationEvents.Add(_operationEventMapper.ToEntity(@event));
+        }
+    }
+
+    private void AddReceipts(Operation operation, DbOperation dbOperation)
+    {
+        foreach (var receipt in operation.UncommittedReceipts)
+        {
+            dbOperation.Receipts.Add(_receiptMapper.ToEntity(receipt));
         }
     }
 }

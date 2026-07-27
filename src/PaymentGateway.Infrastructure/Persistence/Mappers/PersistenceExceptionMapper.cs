@@ -34,6 +34,24 @@ internal sealed class PersistenceExceptionMapper
             var name when name == ConstraintNames.OperationsProviderPaymentIdUnique =>
                 new DuplicateResourceException(nameof(Operation), nameof(Operation.ProviderPaymentId)),
 
+            var name when name == ConstraintNames.OperationEventsPrimaryKey =>
+                new DuplicateResourceException(
+                    nameof(OperationEvent),
+                    nameof(OperationEvent.OperationId),
+                    nameof(OperationEvent.EventId)),
+
+            var name when name == ConstraintNames.ReceiptsPrimaryKey =>
+                new DuplicateResourceException(
+                    nameof(Receipt),
+                    nameof(Receipt.ReceiptId)),
+
+            var name when name == ConstraintNames.ReceiptsOperationProviderPaymentResultUnique =>
+                new DuplicateResourceException(
+                    nameof(Receipt),
+                    nameof(Receipt.OperationId),
+                    nameof(Receipt.ProviderPaymentId),
+                    nameof(Receipt.Result)),
+
             _ => new PersistenceException("Unique constraint violation.", exception)
         };
     }

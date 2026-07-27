@@ -59,10 +59,10 @@ internal sealed class DispatchOperationCommandHandler : IRequestHandler<Dispatch
 
         operation.AttachProviderPayment(providerResponse.ProviderPaymentId);
 
+        await _operationRepository.UpdateAsync(operation, cancellationToken);
+
         try
         {
-            await _operationRepository.UpdateAsync(operation, cancellationToken);
-
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
         catch (ConcurrencyException)

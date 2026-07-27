@@ -18,6 +18,11 @@ internal sealed class DbOperationEventConfig : IEntityTypeConfiguration<DbOperat
             .HasName(ConstraintNames.OperationEventsPrimaryKey);
 
         builder
+            .Property(x => x.OperationId)
+            .HasMaxLength(DbOperationEventConstants.OperationIdLength)
+            .IsRequired();
+
+        builder
             .Property(x => x.EventId)
             .ValueGeneratedNever()
             .IsRequired();

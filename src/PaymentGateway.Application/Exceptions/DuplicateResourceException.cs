@@ -1,9 +1,13 @@
-namespace PaymentGateway.Application.Exceptions;
-
-public sealed class DuplicateResourceException(string resource, string field)
-    : ApplicationException($"{resource} with duplicate '{field}' already exists.")
+public sealed class DuplicateResourceException : PaymentGateway.Application.Exceptions.ApplicationException
 {
-    public string Resource { get; } = resource;
+    public DuplicateResourceException(string resource, params string[] properties)
+        : base($"Duplicate '{resource}' for unique field(s): {string.Join(", ", properties)}.")
+    {
+        Resource = resource;
+        Properties = properties;
+    }
 
-    public string Field { get; } = field;
+    public string Resource { get; }
+
+    public IReadOnlyList<string> Properties { get; }
 }

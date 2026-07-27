@@ -10,6 +10,8 @@ internal sealed class PaymentGatewayDbContext : DbContext
     }
 
     public DbSet<DbOperation> Operations => Set<DbOperation>();
+    public DbSet<DbOperationEvent> OperationEvents => Set<DbOperationEvent>();
+    public DbSet<DbReceipt> Receipts => Set<DbReceipt>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

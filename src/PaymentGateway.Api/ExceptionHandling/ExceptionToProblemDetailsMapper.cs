@@ -10,6 +10,13 @@ internal static class ExceptionToProblemDetailsMapper
     {
         return exception switch
         {
+            ProviderPaymentMismatchException providerPaymentMismatchException =>
+                Create(
+                    httpContext,
+                    StatusCodes.Status409Conflict,
+                    "Provider payment mismatch",
+                    providerPaymentMismatchException.Message),
+
             DomainException domainException =>
                 Create(
                     httpContext,
@@ -23,13 +30,6 @@ internal static class ExceptionToProblemDetailsMapper
                     StatusCodes.Status400BadRequest,
                     "Request validation error",
                     requestValidationException.Message),
-
-            ConflictException conflictException =>
-                Create(
-                    httpContext,
-                    StatusCodes.Status409Conflict,
-                    "Conflict",
-                    conflictException.Message),
 
             NotFoundException notFoundException =>
                 Create(

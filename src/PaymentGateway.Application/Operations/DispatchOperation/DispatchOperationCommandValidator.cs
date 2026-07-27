@@ -7,6 +7,6 @@ internal sealed class DispatchOperationCommandValidator : AbstractValidator<Disp
     public DispatchOperationCommandValidator()
     {
         RuleFor(x => x.OperationId)
-            .NotNull();
+            .NotEmpty();
     }
 }

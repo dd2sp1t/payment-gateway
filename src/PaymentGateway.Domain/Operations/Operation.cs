@@ -7,26 +7,21 @@ public sealed class Operation
     #region Fields
 
     private readonly List<OperationEvent> _uncommittedEvents = [];
+    private readonly List<Receipt> _uncommittedReceipts = [];
 
     #endregion
 
     #region Properties
 
     public OperationId OperationId { get; }
-
     public Guid? ProviderPaymentId { get; private set; }
-
     public decimal Amount { get; }
-
     public string Currency { get; }
-
     public string Description { get; }
-
     public OperationStatus Status { get; private set; }
-
     public long LastEventId { get; private set; }
-
     public IReadOnlyList<OperationEvent> UncommittedEvents => _uncommittedEvents;
+    public IReadOnlyList<Receipt> UncommittedReceipts => _uncommittedReceipts;
 
     #endregion
 
@@ -121,7 +116,7 @@ public sealed class Operation
 
     #region Public methods
 
-    public void StartProcessing()
+    public void Submit()
     {
         if (Status != OperationStatus.Created)
         {
@@ -132,51 +127,49 @@ public sealed class Operation
         Status = OperationStatus.Processing;
 
         AddEvent(
-            type: OperationEventType.Processing,
+            type: OperationEventType.Submited,
             fromStatus: OperationStatus.Created,
             toStatus: OperationStatus.Processing,
             message: "Operation processing started.");
     }
 
-    public void Complete(Guid providerPaymentId)
+    public void ProcessReceipt(Receipt receipt)
     {
-        if (Status != OperationStatus.Processing)
+        SetProviderPaymentId(receipt.ProviderPaymentId);
+
+        switch (Status, receipt.Result)
         {
-            throw new DomainException($"Operation '{OperationId}' cannot be completed from '{Status}'.");
+            case (OperationStatus.Processing, ReceiptResult.Completed):
+                Complete(receipt);
+                break;
+
+            case (OperationStatus.Processing, ReceiptResult.Rejected):
+                Reject(receipt);
+                break;
+
+            case (OperationStatus.Completed, ReceiptResult.Rejected):
+            case (OperationStatus.Rejected, ReceiptResult.Completed):
+                Ignore(receipt);
+                break;
+
+            case (OperationStatus.Completed, ReceiptResult.Completed):
+            case (OperationStatus.Rejected, ReceiptResult.Rejected):
+                break;
+
+            default:
+                throw new DomainException(
+                    $"Cannot process receipt for operation '{OperationId}' with status '{Status}'.");
         }
-
-        SetProviderPaymentId(providerPaymentId);
-
-        Status = OperationStatus.Completed;
-
-        AddEvent(
-            type: OperationEventType.Completed,
-            fromStatus: OperationStatus.Processing,
-            toStatus: OperationStatus.Completed,
-            message: "Operation completed.");
-    }
-
-    public void Reject(Guid providerPaymentId)
-    {
-        if (Status != OperationStatus.Processing)
-        {
-            throw new DomainException($"Operation '{OperationId}' cannot be rejected from '{Status}'.");
-        }
-
-        SetProviderPaymentId(providerPaymentId);
-
-        Status = OperationStatus.Rejected;
-
-        AddEvent(
-            type: OperationEventType.Rejected,
-            fromStatus: OperationStatus.Processing,
-            toStatus: OperationStatus.Rejected,
-            message: "Operation rejected.");
     }
 
     public void ClearUncommittedEvents()
     {
         _uncommittedEvents.Clear();
+    }
+
+    public void ClearUncommittedReceipts()
+    {
+        _uncommittedReceipts.Clear();
     }
 
     public void AttachProviderPayment(Guid providerPaymentId)
@@ -198,7 +191,7 @@ public sealed class Operation
 
         if (ProviderPaymentId != providerPaymentId)
         {
-            throw new DomainException($"Provider payment id cannot be changed for operation '{OperationId}'.");
+            throw new ProviderPaymentMismatchException(OperationId);
         }
     }
 
@@ -210,6 +203,48 @@ public sealed class Operation
     {
         var @event = OperationEvent.Create(OperationId, ++LastEventId, type, fromStatus, toStatus, message);
         _uncommittedEvents.Add(@event);
+    }
+
+    private void AddReceipt(Receipt receipt)
+    {
+        _uncommittedReceipts.Add(receipt);
+    }
+
+    private void Complete(Receipt receipt)
+    {
+        AddReceipt(receipt);
+
+        Status = OperationStatus.Completed;
+
+        AddEvent(
+            type: OperationEventType.Completed,
+            fromStatus: OperationStatus.Processing,
+            toStatus: OperationStatus.Completed,
+            message: "Operation completed.");
+    }
+
+    private void Reject(Receipt receipt)
+    {
+        AddReceipt(receipt);
+
+        Status = OperationStatus.Rejected;
+
+        AddEvent(
+            type: OperationEventType.Rejected,
+            fromStatus: OperationStatus.Processing,
+            toStatus: OperationStatus.Rejected,
+            message: "Operation rejected.");
+    }
+
+    private void Ignore(Receipt receipt)
+    {
+        AddReceipt(receipt);
+
+        AddEvent(
+            type: OperationEventType.Ignored,
+            fromStatus: Status,
+            toStatus: Status,
+            message: "Ignored conflicting receipt.");
     }
 
     #endregion

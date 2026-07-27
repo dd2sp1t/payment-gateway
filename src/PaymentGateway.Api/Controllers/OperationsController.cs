@@ -34,6 +34,7 @@ public sealed class OperationsController : ControllerBase
     [ProducesResponseType<SubmitOperationResponse>(StatusCodes.Status202Accepted)]
     [ProducesResponseType<SubmitOperationResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<SubmitOperationResponse>> Submit(
         [FromRoute] string operationId,

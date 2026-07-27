@@ -5,17 +5,11 @@ public sealed class OperationEvent
     #region Properties
 
     public OperationId OperationId { get; }
-
     public long EventId { get; }
-
     public OperationEventType Type { get; }
-
     public OperationStatus? FromStatus { get; }
-
     public OperationStatus ToStatus { get; }
-
     public string Message { get; }
-
     public DateTimeOffset OccurredAt { get; }
 
     #endregion
@@ -28,8 +22,7 @@ public sealed class OperationEvent
         OperationEventType type,
         OperationStatus? fromStatus,
         OperationStatus toStatus,
-        string message,
-        DateTimeOffset occurredAt)
+        string message)
     {
         OperationId = operationId;
         EventId = eventId;
@@ -37,7 +30,7 @@ public sealed class OperationEvent
         FromStatus = fromStatus;
         ToStatus = toStatus;
         Message = message;
-        OccurredAt = occurredAt;
+        OccurredAt = DateTimeOffset.UtcNow;
     }
 
     #endregion
@@ -58,8 +51,7 @@ public sealed class OperationEvent
             type,
             fromStatus,
             toStatus,
-            message,
-            occurredAt: DateTimeOffset.UtcNow);
+            message);
     }
 
     #endregion

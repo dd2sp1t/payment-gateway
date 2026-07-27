@@ -12,7 +12,7 @@ using PaymentGateway.Infrastructure.Persistence;
 namespace PaymentGateway.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(PaymentGatewayDbContext))]
-    [Migration("20260726154511_InitialCreate")]
+    [Migration("20260727020307_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -81,6 +81,7 @@ namespace PaymentGateway.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("PaymentGateway.Infrastructure.Persistence.Entities.DbOperationEvent", b =>
                 {
                     b.Property<string>("OperationId")
+                        .HasMaxLength(128)
                         .HasColumnType("character varying(128)");
 
                     b.Property<long>("EventId")
@@ -120,6 +121,48 @@ namespace PaymentGateway.Infrastructure.Persistence.Migrations
                     b.ToTable("operation_events", (string)null);
                 });
 
+            modelBuilder.Entity("PaymentGateway.Infrastructure.Persistence.Entities.DbReceipt", b =>
+                {
+                    b.Property<Guid>("ReceiptId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("OperationId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<Guid>("ProviderPaymentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Result")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("ReceiptId")
+                        .HasName("pk_receipts");
+
+                    b.HasIndex("OperationId", "ProviderPaymentId", "Result")
+                        .IsUnique()
+                        .HasDatabaseName("ux_receipts_operationid_providerpaymentid_result");
+
+                    b.ToTable("receipts", (string)null);
+                });
+
             modelBuilder.Entity("PaymentGateway.Infrastructure.Persistence.Entities.DbOperationEvent", b =>
                 {
                     b.HasOne("PaymentGateway.Infrastructure.Persistence.Entities.DbOperation", "Operation")
@@ -132,9 +175,23 @@ namespace PaymentGateway.Infrastructure.Persistence.Migrations
                     b.Navigation("Operation");
                 });
 
+            modelBuilder.Entity("PaymentGateway.Infrastructure.Persistence.Entities.DbReceipt", b =>
+                {
+                    b.HasOne("PaymentGateway.Infrastructure.Persistence.Entities.DbOperation", "Operation")
+                        .WithMany("Receipts")
+                        .HasForeignKey("OperationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_receipts_operations_operationid");
+
+                    b.Navigation("Operation");
+                });
+
             modelBuilder.Entity("PaymentGateway.Infrastructure.Persistence.Entities.DbOperation", b =>
                 {
                     b.Navigation("OperationEvents");
+
+                    b.Navigation("Receipts");
                 });
 #pragma warning restore 612, 618
         }

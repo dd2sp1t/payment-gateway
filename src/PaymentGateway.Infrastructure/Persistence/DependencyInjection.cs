@@ -30,6 +30,7 @@ public static class DependencyInjection
         services.AddSingleton<PersistenceExceptionMapper>();
         services.AddSingleton<OperationMapper>();
         services.AddSingleton<OperationEventMapper>();
+        services.AddSingleton<ReceiptMapper>();
 
         services.AddScoped<IOperationRepository, OperationRepository>();
         services.AddScoped<IOperationReadRepository, OperationReadRepository>();

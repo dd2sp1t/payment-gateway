@@ -25,4 +25,17 @@ internal sealed class OperationReadRepository : IOperationReadRepository
             .Select(x => (OperationId)x.OperationId)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<bool> IsReceiptProcessedAsync(
+        OperationId operationId,
+        Guid providerPaymentId,
+        ReceiptResult result,
+        CancellationToken cancellationToken)
+    {
+        return await _dbContext.Receipts.AnyAsync(
+            x => x.OperationId == operationId
+                && x.ProviderPaymentId == providerPaymentId
+                && x.Result == result,
+             cancellationToken);
+    }
 }

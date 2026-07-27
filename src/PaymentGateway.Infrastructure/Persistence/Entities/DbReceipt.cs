@@ -2,13 +2,12 @@ using PaymentGateway.Domain.Operations;
 
 namespace PaymentGateway.Infrastructure.Persistence.Entities;
 
-internal sealed class DbOperationEvent : DbEntity
+internal sealed class DbReceipt : DbEntity
 {
+    public Guid ReceiptId { get; set; }
+    public Guid ProviderPaymentId { get; set; }
     public string OperationId { get; set; } = null!;
-    public long EventId { get; set; }
-    public OperationEventType Type { get; set; }
-    public OperationStatus? FromStatus { get; set; }
-    public OperationStatus ToStatus { get; set; }
+    public ReceiptResult Result { get; set; }
     public string Message { get; set; } = null!;
     public DateTimeOffset OccurredAt { get; set; }
 

@@ -27,11 +27,6 @@ internal sealed class DbOperationConfig : IEntityTypeConfiguration<DbOperation>
             .IsRequired(false);
 
         builder
-            .HasIndex(x => x.ProviderPaymentId)
-            .IsUnique()
-            .HasDatabaseName(ConstraintNames.OperationsProviderPaymentIdUnique);
-
-        builder
             .Property(x => x.Amount)
             .HasPrecision(
                 precision: DbOperationConstants.AmountPrecision,
@@ -74,6 +69,17 @@ internal sealed class DbOperationConfig : IEntityTypeConfiguration<DbOperation>
             .HasMany(x => x.OperationEvents)
             .WithOne(x => x.Operation)
             .HasForeignKey(x => x.OperationId)
-            .HasConstraintName(ConstraintNames.OperationEventsOperationForeignKey);
+            .HasConstraintName(ConstraintNames.OperationEventsOperationsForeignKey);
+
+        builder
+            .HasMany(x => x.Receipts)
+            .WithOne(x => x.Operation)
+            .HasForeignKey(x => x.OperationId)
+            .HasConstraintName(ConstraintNames.ReceiptsOperationsForeignKey);
+
+        builder
+            .HasIndex(x => x.ProviderPaymentId)
+            .IsUnique()
+            .HasDatabaseName(ConstraintNames.OperationsProviderPaymentIdUnique);
     }
 }
