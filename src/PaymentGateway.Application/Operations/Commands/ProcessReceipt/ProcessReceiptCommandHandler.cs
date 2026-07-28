@@ -33,8 +33,6 @@ internal sealed class ProcessReceiptCommandHandler : IRequestHandler<ProcessRece
 
     public async Task Handle(ProcessReceiptCommand request, CancellationToken cancellationToken)
     {
-        cancellationToken = CancellationToken.None;
-
         _logger.LogInformation(
             "Receipt received. OperationId={OperationId} ProviderPaymentId={ProviderPaymentId} Result={Result}",
             request.OperationId,

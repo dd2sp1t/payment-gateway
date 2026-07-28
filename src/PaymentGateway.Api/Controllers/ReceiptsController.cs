@@ -21,11 +21,9 @@ public sealed class ReceiptsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> Process(
-        [FromBody] ProcessReceiptCommand command,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> Process([FromBody] ProcessReceiptCommand command, CancellationToken _)
     {
-        await _sender.Send(command, cancellationToken);
+        await _sender.Send(command, CancellationToken.None);
 
         return NoContent();
     }

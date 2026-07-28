@@ -14,7 +14,7 @@ internal sealed class ExponentialBackoffDispatchRetryPolicy : IDispatchRetryPoli
 
     public bool CanRetry(int retryCount)
     {
-        return retryCount < _options.RetryCount;
+        return retryCount < _options.MaxRetryCount;
     }
 
     public DateTimeOffset GetNextDispatchAt(int attempts)
