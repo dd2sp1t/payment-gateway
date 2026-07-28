@@ -2,6 +2,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
+using PaymentGateway.Application.Abstractions.Diagnostics;
 using PaymentGateway.Application.Abstractions.PaymentProvider;
 using PaymentGateway.Application.Abstractions.PaymentProvider.Models;
 
@@ -17,13 +18,15 @@ internal sealed class PaymentProviderClient : IPaymentProviderClient
         }
     };
 
-    private readonly HttpClient _httpClient;
     private readonly ILogger<PaymentProviderClient> _logger;
+    private readonly IMetrics _metrics;
+    private readonly HttpClient _httpClient;
 
-    public PaymentProviderClient(HttpClient httpClient, ILogger<PaymentProviderClient> logger)
+    public PaymentProviderClient(IMetrics metrics, ILogger<PaymentProviderClient> logger, HttpClient httpClient)
     {
-        _httpClient = httpClient;
         _logger = logger;
+        _metrics = metrics;
+        _httpClient = httpClient;
     }
 
     public async Task<SubmitPaymentResponse> SubmitAsync(
@@ -31,6 +34,8 @@ internal sealed class PaymentProviderClient : IPaymentProviderClient
         int retryCount,
         CancellationToken cancellationToken)
     {
+        using var _ = _metrics.MeasureProviderRequest();
+
         var requestBody = JsonSerializer.Serialize(request, JsonOptions);
 
         _logger.LogInformation(

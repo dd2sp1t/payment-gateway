@@ -49,7 +49,6 @@ internal sealed class OperationReadRepository : IOperationReadRepository
         CancellationToken cancellationToken)
     {
         return await _dbContext.Operations
-            .AsNoTracking()
             .Where(x => x.OperationId == operationId)
             .Select(x => new OperationReadModel(
                 (OperationId)x.OperationId,
@@ -66,7 +65,6 @@ internal sealed class OperationReadRepository : IOperationReadRepository
         CancellationToken cancellationToken)
     {
         return await _dbContext.OperationEvents
-            .AsNoTracking()
             .Where(x => x.OperationId == operationId)
             .OrderBy(x => x.EventId)
             .Select(x => new OperationEventReadModel(
@@ -77,5 +75,21 @@ internal sealed class OperationReadRepository : IOperationReadRepository
                 x.Message,
                 x.OccurredAt))
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task<TimeSpan?> GetOldestProcessingAgeAsync(CancellationToken cancellationToken)
+    {
+        var updatedAt = await _dbContext.Operations
+            .Where(x => x.Status == OperationStatus.Processing)
+            .OrderBy(x => x.UpdatedAt)
+            .Select(x => x.UpdatedAt)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (updatedAt == default)
+        {
+            return null;
+        }
+
+        return DateTimeOffset.UtcNow - updatedAt;
     }
 }

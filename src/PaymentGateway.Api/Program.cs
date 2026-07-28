@@ -48,6 +48,7 @@ app.UseExceptionHandler();
 app.MapControllers();
 
 app.MapHealthChecks("/health");
+app.MapPrometheusScrapingEndpoint();
 
 try
 {

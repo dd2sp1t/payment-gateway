@@ -7,13 +7,12 @@ using PaymentGateway.Application.Abstractions.Persistence.Repositories;
 using PaymentGateway.Infrastructure.Persistence.Mappers;
 using PaymentGateway.Infrastructure.Persistence.ReadRepositories;
 using PaymentGateway.Infrastructure.Persistence.Repositories;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace PaymentGateway.Infrastructure.Persistence;
 
-public static class DependencyInjection
+internal static class DependencyInjection
 {
-    internal static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("Postgres")
             ?? throw new InvalidOperationException("Connection string 'Postgres' was not found.");

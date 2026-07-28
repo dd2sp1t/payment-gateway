@@ -4,7 +4,7 @@ using PaymentGateway.Application.Abstractions.Dispatch;
 
 namespace PaymentGateway.Infrastructure.Dispatch;
 
-public static class DependencyInjection
+internal static class DependencyInjection
 {
     public static IServiceCollection AddDispatch(this IServiceCollection services, IConfiguration configuration)
     {

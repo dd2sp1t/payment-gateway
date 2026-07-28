@@ -18,4 +18,6 @@ public interface IOperationReadRepository
     Task<IReadOnlyList<OperationEventReadModel>> GetOperationEventsAsync(
         OperationId operationId,
         CancellationToken cancellationToken);
+
+    Task<TimeSpan?> GetOldestProcessingAgeAsync(CancellationToken cancellationToken);
 }

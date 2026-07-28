@@ -6,11 +6,9 @@ using PaymentGateway.Infrastructure.PaymentProvider.PaymentProviderClients;
 
 namespace PaymentGateway.Infrastructure.PaymentProvider;
 
-public static class DependencyInjection
+internal static class DependencyInjection
 {
-    internal static IServiceCollection AddPaymentProvider(
-        this IServiceCollection services,
-        IConfiguration configuration)
+    public static IServiceCollection AddPaymentProvider(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<PaymentProviderClientOptions>(
             configuration.GetSection(nameof(PaymentProviderClientOptions)));

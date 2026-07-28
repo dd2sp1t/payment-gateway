@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
+using PaymentGateway.Application.Abstractions.Diagnostics;
 using PaymentGateway.Application.Abstractions.Dispatch;
 using PaymentGateway.Application.Abstractions.PaymentProvider;
 using PaymentGateway.Application.Abstractions.PaymentProvider.Models;
@@ -15,6 +16,7 @@ internal sealed class DispatchOperationCommandHandler : IRequestHandler<Dispatch
 {
     private const int MaxConcurrencyRetries = 20;
     private readonly ILogger<DispatchOperationCommandHandler> _logger;
+    private readonly IMetrics _metrics;
     private readonly IOperationRepository _operationRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPaymentProviderClient _paymentProviderClient;
@@ -23,6 +25,7 @@ internal sealed class DispatchOperationCommandHandler : IRequestHandler<Dispatch
 
     public DispatchOperationCommandHandler(
         ILogger<DispatchOperationCommandHandler> logger,
+        IMetrics metrics,
         IOperationRepository operationRepository,
         IUnitOfWork unitOfWork,
         IPaymentProviderClient paymentProviderClient,
@@ -30,6 +33,7 @@ internal sealed class DispatchOperationCommandHandler : IRequestHandler<Dispatch
         IDispatchFailureClassifier dispatchFailureClassifier)
     {
         _logger = logger;
+        _metrics = metrics;
         _operationRepository = operationRepository;
         _unitOfWork = unitOfWork;
         _paymentProviderClient = paymentProviderClient;
@@ -72,7 +76,8 @@ internal sealed class DispatchOperationCommandHandler : IRequestHandler<Dispatch
             }
             catch (ConcurrencyException)
             {
-                // TODO:
+                _metrics.DispatchConcurrencyRetry();
+
                 _logger.LogInformation(
                     "Concurrency conflict. Reloading operation. OperationId={OperationId} Attempt={Attempt} MaxAttempts={MaxAttempts}",
                     operation.OperationId,
@@ -93,6 +98,8 @@ internal sealed class DispatchOperationCommandHandler : IRequestHandler<Dispatch
 
         try
         {
+            _metrics.DispatchRequested();
+
             var response = await _paymentProviderClient.SubmitAsync(
                 request,
                 operation.RetryCount,
@@ -101,6 +108,8 @@ internal sealed class DispatchOperationCommandHandler : IRequestHandler<Dispatch
             operation.AttachProviderPayment(response.ProviderPaymentId);
 
             await PersistAsync(operation, cancellationToken);
+
+            _metrics.DispatchSucceeded();
         }
         catch (Exception exception) when (_dispatchFailureClassifier.IsTransient(exception))
         {
@@ -128,6 +137,8 @@ internal sealed class DispatchOperationCommandHandler : IRequestHandler<Dispatch
 
             await PersistAsync(operation, cancellationToken);
 
+            _metrics.DispatchRetryLimitReached();
+
             _logger.LogError(
                 exception,
                 "Dispatch failed. OperationId={OperationId} RetryCount={RetryCount}",
@@ -142,6 +153,8 @@ internal sealed class DispatchOperationCommandHandler : IRequestHandler<Dispatch
         operation.ScheduleRetry(nextDispatchAt);
 
         await PersistAsync(operation, cancellationToken);
+
+        _metrics.DispatchRetryScheduled();
 
         _logger.LogWarning(
             exception,
