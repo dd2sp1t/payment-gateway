@@ -2,6 +2,7 @@ using PaymentGateway.Api.ExceptionHandling;
 using PaymentGateway.Api.Serialization;
 using PaymentGateway.Application;
 using PaymentGateway.Infrastructure;
+using PaymentGateway.Infrastructure.Persistence;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -52,7 +53,13 @@ app.MapPrometheusScrapingEndpoint();
 
 try
 {
-    Log.Information("Application is starting.");
+    Log.Information("Applying database migrations.");
+
+    await app.Services.ApplyMigrationsAsync();
+
+    Log.Information("Database migrations applied.");
+
+    Log.Information("Starting web host.");
 
     app.Run();
 }

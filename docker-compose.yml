@@ -1,82 +1,93 @@
 version: "3.9"
 
 services:
-
   postgres:
     image: postgres:17
-    container_name: payment-gateway-postgres
-
+    container_name: postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: payment_gateway
-
     ports:
-      - "55432:5432"
-
+      - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d payment_gateway" ]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+
+  candidate-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: candidate-service
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__Postgres=Host=postgres;Port=5432;Database=payment_gateway;Username=postgres;Password=postgres
+      - PROVIDER_URL=http://provider-simulator:8081
+      - Serilog__WriteTo__1__Args__serverUrl=http://seq:80
+    ports:
+      - "8080:8080"
+    volumes:
+      - candidate-data:/data
+      - .:/src:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  provider-simulator:
+    image: ghcr.io/fintech-dev-lab/internship-provider-simulator:v0.2.0
+    container_name: provider-simulator
+    environment:
+      CALLBACK_URL: http://candidate-service:8080/receipts
+    ports:
+      - "8081:8081"
+    depends_on:
+      - candidate-service
 
   seq:
     image: datalust/seq:latest
-    container_name: payment-gateway-seq
-
+    container_name: seq
     restart: unless-stopped
-
     environment:
       ACCEPT_EULA: "Y"
       SEQ_FIRSTRUN_NOAUTHENTICATION: "true"
-
     ports:
       - "5341:80"
-
     volumes:
       - seq-data:/data
 
   prometheus:
     image: prom/prometheus:latest
-    container_name: payment-gateway-prometheus
-
+    container_name: prometheus
     restart: unless-stopped
-
     ports:
       - "9090:9090"
-
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus-data:/prometheus
 
   grafana:
     image: grafana/grafana:latest
-    container_name: payment-gateway-grafana
-
+    container_name: grafana
     restart: unless-stopped
-
     ports:
       - "3000:3000"
-
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_ANALYTICS_REPORTING_ENABLED=false
-
     volumes:
       - grafana-data:/var/lib/grafana
-      - ./monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./monitoring/grafana/provisioning/datasources/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml:ro
       - ./monitoring/grafana/provisioning/dashboards/provider.yml:/etc/grafana/provisioning/dashboards/provider.yml:ro
       - ./monitoring/grafana/provisioning/dashboards:/var/lib/grafana/dashboards:ro
 
-  provider-simulator:
-    image: ghcr.io/fintech-dev-lab/internship-provider-simulator:v0.2.0
-
-    ports:
-      - "8081:8081"
-
-    environment:
-      CALLBACK_URL: http://host.docker.internal:8080/receipts
-
 volumes:
   postgres-data:
+  candidate-data:
   seq-data:
   prometheus-data:
   grafana-data:

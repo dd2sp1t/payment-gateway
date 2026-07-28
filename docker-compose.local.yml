@@ -1,0 +1,66 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:17
+    container_name: postgres-local
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: payment_gateway
+    ports:
+      - "55432:5432"
+    volumes:
+      - postgres-local-data:/var/lib/postgresql/data
+
+  seq:
+    image: datalust/seq:latest
+    container_name: seq-local
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      SEQ_FIRSTRUN_NOAUTHENTICATION: "true"
+    ports:
+      - "5341:80"
+    volumes:
+      - seq-local-data:/data
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus-local
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.local.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-local-data:/prometheus
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana-local
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_ANALYTICS_REPORTING_ENABLED=false
+    volumes:
+      - grafana-local-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning/datasources/datasource.local.yml:/etc/grafana/provisioning/datasources/datasource.yml:ro
+      - ./monitoring/grafana/provisioning/dashboards/provider.yml:/etc/grafana/provisioning/dashboards/provider.yml:ro
+      - ./monitoring/grafana/provisioning/dashboards:/var/lib/grafana/dashboards:ro
+
+  provider-simulator:
+    image: ghcr.io/fintech-dev-lab/internship-provider-simulator:v0.2.0
+    container_name: provider-simulator-local
+    environment:
+      CALLBACK_URL: http://host.docker.internal:8080/receipts
+    ports:
+      - "8081:8081"
+
+volumes:
+  postgres-local-data:
+  seq-local-data:
+  prometheus-local-data:
+  grafana-local-data:
