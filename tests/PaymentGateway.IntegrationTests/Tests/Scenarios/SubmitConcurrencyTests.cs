@@ -7,7 +7,9 @@ namespace PaymentGateway.IntegrationTests.Tests.Scenarios;
 
 public class SubmitConcurrencyTests : IntegrationTestBase
 {
-    public SubmitConcurrencyTests(TestDatabaseFixture fixture) : base(fixture) { }
+    public SubmitConcurrencyTests(TestDatabaseFixture fixture) : base(fixture)
+    {
+    }
 
     [Fact]
     public async Task Submit_MultipleConcurrentRequests_ShouldDispatchExactlyOnce()
@@ -16,7 +18,8 @@ public class SubmitConcurrencyTests : IntegrationTestBase
         var operationId = $"op-concurrent-{Guid.NewGuid()}";
 
         const int concurrentCount = 10;
-        for (int i = 0; i < concurrentCount; i++)
+
+        for (var i = 0; i < concurrentCount; i++)
         {
             ScenarioStore
                 .For(operationId)
@@ -25,20 +28,18 @@ public class SubmitConcurrencyTests : IntegrationTestBase
 
         ScenarioStore
             .For(operationId)
-            .Callback(ReceiptResult.Completed, delay: TimeSpan.FromMilliseconds(500));
+            .Callback(
+                ReceiptResult.Completed,
+                delay: TimeSpan.FromMilliseconds(500));
 
-        var createResponse = await Client.CreateOperationAsync(operationId);
-        createResponse.EnsureSuccessStatusCode();
-
-        var tasks = new List<Task<HttpResponseMessage>>();
+        (await Client.CreateOperationAsync(operationId))
+            .EnsureSuccessStatusCode();
 
         // act
-        for (int i = 0; i < concurrentCount; i++)
-        {
-            tasks.Add(Client.SubmitOperationAsync(operationId));
-        }
-
-        var submitResponses = await Task.WhenAll(tasks);
+        var submitResponses = await Task.WhenAll(
+            Enumerable
+                .Range(0, concurrentCount)
+                .Select(_ => Client.SubmitOperationAsync(operationId)));
 
         // assert
         submitResponses
@@ -51,11 +52,12 @@ public class SubmitConcurrencyTests : IntegrationTestBase
                 r.StatusCode == HttpStatusCode.Accepted ||
                 r.StatusCode == HttpStatusCode.OK);
 
-        await Task.Delay(5000);
-
         await ScenarioStore.DispatchNextCallbackAsync(operationId);
 
-        await Task.Delay(1000);
+        await AssertHelper.AssertStatusIsStable(
+            Client,
+            operationId,
+            "COMPLETED");
 
         var events = await Client.GetEventsAsync(operationId);
 

@@ -1,4 +1,3 @@
-using FluentAssertions;
 using PaymentGateway.Domain.Operations;
 using PaymentGateway.IntegrationTests.Helpers;
 
@@ -6,7 +5,9 @@ namespace PaymentGateway.IntegrationTests.Tests.Scenarios;
 
 public class BasicFlowTests : IntegrationTestBase
 {
-    public BasicFlowTests(TestDatabaseFixture fixture) : base(fixture) { }
+    public BasicFlowTests(TestDatabaseFixture fixture) : base(fixture)
+    {
+    }
 
     [Fact]
     public async Task Operation_ShouldGoToCompleted_WhenProviderAcceptsAndSendsCompletedCallback()
@@ -27,17 +28,13 @@ public class BasicFlowTests : IntegrationTestBase
 
         await ScenarioStore.DispatchNextCallbackAsync(operationId);
 
-        await Task.Delay(1000);
-
-        var operation = await Client.GetOperationAsync(operationId);
-        var events = await Client.GetEventsAsync(operationId);
-
         // assert
-        operation
-            .GetProperty("status")
-            .GetString()
-            .Should()
-            .Be("COMPLETED");
+        await AssertHelper.AssertStatusIsStable(
+            Client,
+            operationId,
+            "COMPLETED");
+
+        var events = await Client.GetEventsAsync(operationId);
 
         AssertHelper.AssertEventSequence(
             events,
@@ -65,17 +62,13 @@ public class BasicFlowTests : IntegrationTestBase
 
         await ScenarioStore.DispatchNextCallbackAsync(operationId);
 
-        await Task.Delay(1000);
-
-        var operation = await Client.GetOperationAsync(operationId);
-        var events = await Client.GetEventsAsync(operationId);
-
         // assert
-        operation
-            .GetProperty("status")
-            .GetString()
-            .Should()
-            .Be("REJECTED");
+        await AssertHelper.AssertStatusIsStable(
+            Client,
+            operationId,
+            "REJECTED");
+
+        var events = await Client.GetEventsAsync(operationId);
 
         AssertHelper.AssertEventSequence(
             events,

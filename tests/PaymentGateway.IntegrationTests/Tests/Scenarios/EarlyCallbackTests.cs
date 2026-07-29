@@ -1,4 +1,3 @@
-using FluentAssertions;
 using PaymentGateway.Domain.Operations;
 using PaymentGateway.IntegrationTests.Helpers;
 
@@ -30,17 +29,13 @@ public class EarlyCallbackTests : IntegrationTestBase
 
         (await submitTask).EnsureSuccessStatusCode();
 
-        await Task.Delay(2000);
-
-        var operation = await Client.GetOperationAsync(operationId);
-        var events = await Client.GetEventsAsync(operationId);
-
         // assert
-        operation
-            .GetProperty("status")
-            .GetString()
-            .Should()
-            .Be("COMPLETED");
+        await AssertHelper.AssertStatusIsStable(
+            Client,
+            operationId,
+            "COMPLETED");
+
+        var events = await Client.GetEventsAsync(operationId);
 
         AssertHelper.AssertEventSequence(
             events,
@@ -71,17 +66,13 @@ public class EarlyCallbackTests : IntegrationTestBase
 
         (await submitTask).EnsureSuccessStatusCode();
 
-        await Task.Delay(2000);
-
-        var operation = await Client.GetOperationAsync(operationId);
-        var events = await Client.GetEventsAsync(operationId);
-
         // assert
-        operation
-            .GetProperty("status")
-            .GetString()
-            .Should()
-            .Be("REJECTED");
+        await AssertHelper.AssertStatusIsStable(
+            Client,
+            operationId,
+            "REJECTED");
+
+        var events = await Client.GetEventsAsync(operationId);
 
         AssertHelper.AssertEventSequence(
             events,

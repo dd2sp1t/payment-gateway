@@ -83,45 +83,54 @@ Grafana credentials:
 
 ---
 
-## Сквозной сценарий
+---
 
-### 1. Создать операцию
+# Интеграционные тесты
 
-```bash
-curl -X POST http://localhost:8080/operations \
-  -H "Content-Type: application/json" \
-  -d '{
-    "operationId":"operation-123",
-    "amount":"1000.00",
-    "currency":"RUB",
-    "description":"Оплата заказа"
-  }'
-```
+Проект содержит набор интеграционных тестов, покрывающих основные сценарии работы платежного шлюза.
 
-### 2. Отправить операцию на обработку
+## Запуск всех тестов
 
 ```bash
-curl -X POST \
-http://localhost:8080/operations/operation-123/submit
+dotnet test
 ```
 
-Ожидаемый результат — `202 Accepted` при первой отправке.
+## Запуск отдельных сценариев
 
-### 3. Проверить состояние операции
+### Базовый жизненный цикл операции
 
 ```bash
-curl \
-http://localhost:8080/operations/operation-123
+dotnet test --filter BasicFlowTests
 ```
 
-После обработки провайдером статус станет `COMPLETED` или `REJECTED`.
-
-### 4. Получить историю событий
+### Идемпотентность обработки callback'ов
 
 ```bash
-curl \
-http://localhost:8080/operations/operation-123/events
+dotnet test --filter CallbackIdempotencyTests
 ```
+
+### Callback раньше ответа провайдера
+
+```bash
+dotnet test --filter EarlyCallbackTests
+```
+
+### Конкурентный submit одной операции
+
+```bash
+dotnet test --filter SubmitConcurrencyTests
+```
+
+## Что проверяется
+
+- успешное завершение операции;
+- отклонение операции;
+- идемпотентность callback'ов;
+- callback, пришедший раньше ответа провайдера;
+- конкурентный submit одной операции;
+- неизменяемость финального состояния операции после любых последующих действий.
+
+Во всех сценариях также проверяется корректная последовательность доменных событий.
 
 ---
 
