@@ -80,7 +80,7 @@ internal sealed class SubmitOperationCommandHandler : IRequestHandler<SubmitOper
 
             return (operation, NewlyScheduled: true);
         }
-        catch (ConcurrencyException)
+        catch (DuplicateResourceException)
         {
             _logger.LogInformation(
                 "Operation was submitted concurrently. OperationId={OperationId}",

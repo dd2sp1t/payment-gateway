@@ -37,7 +37,6 @@ internal sealed class OperationRepository : IOperationRepository
     public async Task<Operation?> GetAsync(OperationId operationId, CancellationToken cancellationToken)
     {
         var dbOperation = await _dbContext.Operations
-            .AsNoTracking()
             .SingleOrDefaultAsync(x => x.OperationId == operationId, cancellationToken);
 
         if (dbOperation is null)
@@ -50,13 +49,7 @@ internal sealed class OperationRepository : IOperationRepository
 
     public async Task UpdateAsync(Operation operation, CancellationToken cancellationToken)
     {
-        var dbOperation = await _dbContext.Operations
-            .SingleOrDefaultAsync(x => x.OperationId == operation.OperationId, cancellationToken);
-
-        if (dbOperation is null)
-        {
-            throw new InvalidOperationException($"Operation '{operation.OperationId}' was not found during update.");
-        }
+        var dbOperation = _dbContext.Operations.Local.Single(x => x.OperationId == operation.OperationId);
 
         _operationMapper.Apply(operation, dbOperation);
 

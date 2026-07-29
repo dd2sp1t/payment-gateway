@@ -110,6 +110,12 @@ internal sealed class DispatchOperationCommandHandler : IRequestHandler<Dispatch
             await PersistAsync(operation, cancellationToken);
 
             _metrics.DispatchSucceeded();
+
+            _logger.LogInformation(
+                "Dispatch succeeded. OperationId={OperationId} ProviderPaymentId={ProviderPaymentId} RetryCount={RetryCount}",
+                operation.OperationId,
+                response.ProviderPaymentId,
+                operation.RetryCount);
         }
         catch (Exception exception) when (_dispatchFailureClassifier.IsTransient(exception))
         {
@@ -118,10 +124,11 @@ internal sealed class DispatchOperationCommandHandler : IRequestHandler<Dispatch
         catch (Exception exception)
         {
             _logger.LogError(
-                exception, "Dispatch started. OperationId={OperationId} RetryCount={RetryCount}",
+                exception,
+                "Dispatch failed. OperationId={OperationId} RetryCount={RetryCount}",
                 operation.OperationId,
                 operation.RetryCount);
-
+ 
             throw;
         }
     }

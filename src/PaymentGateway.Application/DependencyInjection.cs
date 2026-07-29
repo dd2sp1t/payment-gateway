@@ -2,7 +2,7 @@ using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using PaymentGateway.Application.Abstractions.BackgroundServices.DispatchOperations;
+using PaymentGateway.Application.BackgroundServices.DispatchOperations;
 using PaymentGateway.Application.Behaviors;
 
 namespace PaymentGateway.Application;

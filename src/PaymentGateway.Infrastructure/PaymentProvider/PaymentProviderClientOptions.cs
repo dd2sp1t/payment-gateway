@@ -1,4 +1,4 @@
-namespace PaymentGateway.Infrastructure.PaymentProvider.PaymentProviderClients;
+namespace PaymentGateway.Infrastructure.PaymentProvider;
 
 public sealed class PaymentProviderClientOptions
 {

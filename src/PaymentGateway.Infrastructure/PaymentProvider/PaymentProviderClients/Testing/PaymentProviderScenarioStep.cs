@@ -1,3 +1,0 @@
-namespace PaymentGateway.Infrastructure.PaymentProvider.PaymentProviderClients.Testing;
-
-internal sealed record PaymentProviderScenarioStep(PaymentProviderScenario Scenario);

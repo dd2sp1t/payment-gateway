@@ -6,7 +6,7 @@ using PaymentGateway.Application.Abstractions.Diagnostics;
 using PaymentGateway.Application.Abstractions.PaymentProvider;
 using PaymentGateway.Application.Abstractions.PaymentProvider.Models;
 
-namespace PaymentGateway.Infrastructure.PaymentProvider.PaymentProviderClients;
+namespace PaymentGateway.Infrastructure.PaymentProvider;
 
 internal sealed class PaymentProviderClient : IPaymentProviderClient
 {

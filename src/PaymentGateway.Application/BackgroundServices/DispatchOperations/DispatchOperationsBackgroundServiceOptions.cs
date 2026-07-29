@@ -1,4 +1,4 @@
-namespace PaymentGateway.Application.Abstractions.BackgroundServices.DispatchOperations;
+namespace PaymentGateway.Application.BackgroundServices.DispatchOperations;
 
 public sealed class DispatchOperationsBackgroundServiceOptions
 {

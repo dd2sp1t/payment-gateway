@@ -1,0 +1,43 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
+
+namespace PaymentGateway.IntegrationTests;
+
+internal static class ServiceCollectionExtensions
+{
+    public static IServiceCollection ReplaceDbContext<TDbContext>(
+        this IServiceCollection services,
+        string connectionString)
+        where TDbContext : DbContext
+    {
+        var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<TDbContext>));
+        if (descriptor != null)
+        {
+            services.Remove(descriptor);
+        }
+
+        services.AddDbContext<TDbContext>(options =>
+        {
+            options.UseNpgsql(connectionString, npgsql =>
+            {
+                npgsql.MigrationsAssembly(typeof(TDbContext).Assembly.FullName);
+            });
+        });
+
+        return services;
+    }
+
+    public static IServiceCollection ReplaceOptions<TOptions>(this IServiceCollection services, TOptions options)
+        where TOptions : class, new()
+    {
+        services.RemoveAll<IConfigureOptions<TOptions>>();
+        services.RemoveAll<IPostConfigureOptions<TOptions>>();
+        services.RemoveAll<IOptions<TOptions>>();
+
+        services.AddSingleton(Options.Create(options));
+
+        return services;
+    }
+}

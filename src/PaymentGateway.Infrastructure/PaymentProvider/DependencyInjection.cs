@@ -2,7 +2,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using PaymentGateway.Application.Abstractions.PaymentProvider;
-using PaymentGateway.Infrastructure.PaymentProvider.PaymentProviderClients;
 
 namespace PaymentGateway.Infrastructure.PaymentProvider;
 

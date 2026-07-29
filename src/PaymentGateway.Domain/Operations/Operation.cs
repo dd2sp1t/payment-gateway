@@ -138,7 +138,7 @@ public sealed class Operation
         Status = OperationStatus.Processing;
 
         AddEvent(
-            type: OperationEventType.Submited,
+            type: OperationEventType.Submitted,
             fromStatus: OperationStatus.Created,
             toStatus: OperationStatus.Processing,
             message: "Operation processing started.");

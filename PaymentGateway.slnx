@@ -6,6 +6,7 @@
     <Project Path="src/PaymentGateway.Infrastructure/PaymentGateway.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/PaymentGateway.IntegrationTests/PaymentGateway.IntegrationTests.csproj" />
     <Project Path="tests/PaymentGateway.UnitTests/PaymentGateway.UnitTests.csproj" />
   </Folder>
 </Solution>

@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace PaymentGateway.Application.Abstractions.BackgroundServices;
+namespace PaymentGateway.Application.BackgroundServices;
 
 internal abstract class PeriodicBackgroundService : BackgroundService
 {

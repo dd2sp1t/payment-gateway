@@ -3,7 +3,7 @@ namespace PaymentGateway.Domain.Operations;
 public enum OperationEventType
 {
     Created,
-    Submited,
+    Submitted,
     Completed,
     Rejected,
     Ignored
