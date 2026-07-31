@@ -31,17 +31,22 @@ internal sealed class OperationContextMiddleware
             {
                 context.Request.EnableBuffering();
 
-                using var document = await JsonDocument.ParseAsync(context.Request.Body);
-
-                if (document.RootElement.TryGetProperty("operationId", out var property))
+                try
                 {
-                    context.Items["OperationId"] = property.GetString();
+                    using var document = await JsonDocument.ParseAsync(context.Request.Body);
+
+                    if (document.RootElement.TryGetProperty("operationId", out var property))
+                    {
+                        context.Items["OperationId"] = property.GetString();
+                    }
                 }
-
-                context.Request.Body.Position = 0;
+                finally
+                {
+                    context.Request.Body.Position = 0;
+                }
             }
-
-            await _next(context);
         }
+
+        await _next(context);
     }
 }
