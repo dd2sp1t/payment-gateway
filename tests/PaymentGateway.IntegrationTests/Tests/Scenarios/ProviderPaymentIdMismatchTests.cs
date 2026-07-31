@@ -12,7 +12,7 @@ public sealed class ProviderPaymentIdMismatchTests : IntegrationTestBase
     }
 
     [Fact]
-    public async Task Submit_WhenProviderReturnsDifferentPaymentId_ShouldNotCompleteDispatch()
+    public async Task Submit_ShouldCompleteAfterRetry_WhenProviderPaymentIdsDiffer()
     {
         // arrange
         var operationId = $"op-provider-mismatch-submit-{Guid.NewGuid()}";
@@ -80,7 +80,7 @@ public sealed class ProviderPaymentIdMismatchTests : IntegrationTestBase
     }
 
     [Fact]
-    public async Task Callback_WithDifferentProviderPaymentId_ShouldReturnConflict()
+    public async Task Callback_ShouldReturnConflict_WhenProviderPaymentIdsDiffer()
     {
         // arrange
         var operationId = $"op-provider-mismatch-callback-{Guid.NewGuid()}";

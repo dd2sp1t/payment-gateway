@@ -117,8 +117,8 @@ dotnet test --filter CallbackIdempotencyTests
 
 ### Callback раньше ответа провайдера
 
-- callback `Completed` приходит раньше HTTP-ответа провайдера;
-- callback `Rejected` приходит раньше HTTP-ответа провайдера.
+- callback `Completed` приходит раньше HTTP-ответа провайдера, терминальный статус сохраняется и не переводится обратно в `PROCESSING`;
+- callback `Rejected` приходит раньше HTTP-ответа провайдера, терминальный статус сохраняется и не переводится обратно в `PROCESSING`.
 
 ```bash
 dotnet test --filter EarlyCallbackTests
@@ -127,6 +127,7 @@ dotnet test --filter EarlyCallbackTests
 ### Несовпадающий providerPaymentId
 
 - callback с другим `ProviderPaymentId` отклоняется с ошибкой `409 Conflict`.
+- submit с другим `ProviderPaymentId` после callback безопасно завершается.
 
 ```bash
 dotnet test --filter ProviderPaymentIdMismatchTests
