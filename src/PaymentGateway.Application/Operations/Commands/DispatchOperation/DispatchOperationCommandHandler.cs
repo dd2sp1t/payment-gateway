@@ -6,15 +6,15 @@ using PaymentGateway.Application.Abstractions.PaymentProvider;
 using PaymentGateway.Application.Abstractions.PaymentProvider.Models;
 using PaymentGateway.Application.Abstractions.Persistence;
 using PaymentGateway.Application.Abstractions.Persistence.Repositories;
-using PaymentGateway.Application.Exceptions;
+using PaymentGateway.Application.Abstractions.Requests;
 using PaymentGateway.Application.Extensions;
 using PaymentGateway.Domain.Operations;
 
 namespace PaymentGateway.Application.Operations.Commands.DispatchOperation;
 
-internal sealed class DispatchOperationCommandHandler : IRequestHandler<DispatchOperationCommand>
+internal sealed class DispatchOperationCommandHandler
+    : IRequestHandler<DispatchOperationCommand>, IOptimisticConcurrencyRequest
 {
-    private const int MaxConcurrencyRetries = 20;
     private readonly ILogger<DispatchOperationCommandHandler> _logger;
     private readonly IMetrics _metrics;
     private readonly IOperationRepository _operationRepository;
@@ -43,52 +43,38 @@ internal sealed class DispatchOperationCommandHandler : IRequestHandler<Dispatch
 
     public async Task Handle(DispatchOperationCommand request, CancellationToken cancellationToken)
     {
-        for (var concurrencyAttempt = 0; concurrencyAttempt <= MaxConcurrencyRetries; concurrencyAttempt++)
+        var operation = await _operationRepository.GetAsync(
+            (OperationId)request.OperationId,
+            cancellationToken);
+
+        if (operation is null)
         {
-            var operation = await _operationRepository.GetAsync(
-                (OperationId)request.OperationId,
-                cancellationToken);
+            _logger.LogWarning(
+                "Operation not found. OperationId={OperationId}",
+                request.OperationId);
 
-            if (operation is null)
-            {
-                _logger.LogWarning(
-                    "Operation not found. OperationId={OperationId}",
-                    request.OperationId);
-
-                return;
-            }
-
-            if (operation.Status != OperationStatus.Processing)
-            {
-                _logger.LogDebug(
-                    "Dispatch skipped. OperationId={OperationId} Status={Status} RetryCount={RetryCount} NextDispatchAt={NextDispatchAt}",
-                    operation.OperationId,
-                    operation.Status,
-                    operation.RetryCount,
-                    operation.NextDispatchAt);
-
-                return;
-            }
-
-            try
-            {
-                await DispatchAsync(operation, cancellationToken);
-
-                return;
-            }
-            catch (ConcurrencyException)
-            {
-                _metrics.DispatchConcurrencyRetry();
-
-                _logger.LogInformation(
-                    "Concurrency conflict. Reloading operation. OperationId={OperationId} Attempt={Attempt} MaxAttempts={MaxAttempts}",
-                    operation.OperationId,
-                    concurrencyAttempt + 1,
-                    MaxConcurrencyRetries);
-            }
+            return;
         }
 
-        throw new ConcurrencyException("Optimistic concurrency retry limit was reached while dispatching the operation.");
+        _logger.LogInformation(
+            "Dispatch started. OperationId={OperationId} ProviderPaymentId={ProviderPaymentId} RetryCount={RetryCount}",
+            operation.OperationId,
+            operation.ProviderPaymentId,
+            operation.RetryCount);
+
+        if (operation.Status != OperationStatus.Processing)
+        {
+            _logger.LogInformation(
+                "Dispatch skipped. OperationId={OperationId} Status={Status} RetryCount={RetryCount} NextDispatchAt={NextDispatchAt}",
+                operation.OperationId,
+                operation.Status,
+                operation.RetryCount,
+                operation.NextDispatchAt);
+
+            return;
+        }
+
+        await DispatchAsync(operation, cancellationToken);
     }
 
     private async Task DispatchAsync(Operation operation, CancellationToken cancellationToken)

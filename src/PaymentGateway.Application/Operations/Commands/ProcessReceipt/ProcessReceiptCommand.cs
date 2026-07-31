@@ -1,4 +1,5 @@
 using MediatR;
+using PaymentGateway.Application.Abstractions.Requests;
 using PaymentGateway.Domain.Operations;
 
 namespace PaymentGateway.Application.Operations.Commands.ProcessReceipt;
@@ -9,4 +10,4 @@ public sealed record ProcessReceiptCommand(
     ReceiptResult Result,
     string Message,
     DateTimeOffset OccurredAt)
-    : IRequest, IOperationRequest;
+    : IRequest, IOperationRequest, IOptimisticConcurrencyRequest;

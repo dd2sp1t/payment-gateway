@@ -92,4 +92,20 @@ internal sealed class OperationReadRepository : IOperationReadRepository
 
         return DateTimeOffset.UtcNow - updatedAt;
     }
+
+    public async Task<IReadOnlyList<ReceiptReadModel>> GetReceiptsAsync(
+        OperationId operationId,
+        CancellationToken cancellationToken)
+    {
+        return await _dbContext.Receipts
+            .AsNoTracking()
+            .Where(x => x.OperationId == operationId)
+            .OrderBy(x => x.CreatedAt)
+            .Select(x => new ReceiptReadModel(
+                x.ProviderPaymentId,
+                x.Result,
+                x.Message,
+                x.OccurredAt))
+            .ToListAsync(cancellationToken);
+    }
 }

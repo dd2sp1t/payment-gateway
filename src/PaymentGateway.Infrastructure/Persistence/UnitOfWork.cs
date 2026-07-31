@@ -42,4 +42,6 @@ internal sealed class UnitOfWork : IUnitOfWork
             throw _exceptionMapper.Map(exception);
         }
     }
+
+    public void ClearChangeTracker() => _dbContext.ChangeTracker.Clear();
 }

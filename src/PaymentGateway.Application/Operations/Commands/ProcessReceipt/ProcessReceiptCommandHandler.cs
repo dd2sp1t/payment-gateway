@@ -83,15 +83,20 @@ internal sealed class ProcessReceiptCommandHandler : IRequestHandler<ProcessRece
         {
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
-        catch (DuplicateResourceException)
+        catch (DuplicateResourceException exception)
+            when (exception.Resource == nameof(Receipt))
         {
             _logger.LogInformation(
                 "Receipt was processed concurrently. OperationId={OperationId} ProviderPaymentId={ProviderPaymentId}",
                 request.OperationId,
                 request.ProviderPaymentId);
 
-            // TODO:
             return;
+        }
+        catch (DuplicateResourceException exception)
+            when (exception.Resource == nameof(OperationEvent))
+        {
+            throw new ConcurrencyException("");
         }
 
         switch (operation.Status)

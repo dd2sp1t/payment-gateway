@@ -17,6 +17,11 @@ internal sealed class Metrics : IMetrics
             unit: "ms",
             description: "Application request execution duration.");
 
+    private readonly Counter<long> _applicationRequestConcurrencyRetry =
+        Meter.CreateCounter<long>(
+            name: "application_request_concurrency_retry",
+            description: "Optimistic concurrency retries for application requests.");
+
     #endregion
 
     #region Operations
@@ -91,11 +96,6 @@ internal sealed class Metrics : IMetrics
             name: "provider_dispatch_retry_limit_reached",
             description: "Provider retry limit reached.");
 
-    private readonly Counter<long> _providerDispatchConcurrencyRetry =
-        Meter.CreateCounter<long>(
-            name: "provider_dispatch_concurrency_retry",
-            description: "Provider concurrency retries.");
-
     #endregion
 
     #endregion
@@ -115,6 +115,11 @@ internal sealed class Metrics : IMetrics
 
     public IDisposable MeasureApplicationRequest(string requestName) =>
         new Timer(_applicationRequestDuration, "application_request", requestName);
+
+    public void ApplicationRequestConcurrencyRetry(string requestName) =>
+        _applicationRequestConcurrencyRetry.Add(
+            1,
+            new KeyValuePair<string, object?>("application_request", requestName));
 
     #endregion
 
@@ -163,9 +168,6 @@ internal sealed class Metrics : IMetrics
 
     public void DispatchRetryLimitReached() =>
         _providerDispatchRetryLimitReached.Add(1);
-
-    public void DispatchConcurrencyRetry() =>
-        _providerDispatchConcurrencyRetry.Add(1);
 
     #endregion
 

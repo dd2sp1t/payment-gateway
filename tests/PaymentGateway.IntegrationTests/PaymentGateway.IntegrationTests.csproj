@@ -12,6 +12,7 @@
     <PackageReference Include="DotNet.Testcontainers" Version="1.6.0" />
     <PackageReference Include="FluentAssertions" Version="8.10.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.10" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.10" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="Testcontainers.PostgreSql" Version="4.13.0" />
     <PackageReference Include="xunit" Version="2.9.3" />
@@ -27,4 +28,15 @@
     <ProjectReference Include="..\..\src\PaymentGateway.Infrastructure\PaymentGateway.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="..\..\src\PaymentGateway.Api\appsettings.json">
+      <Link>appsettings.json</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+
+    <Content Include="..\..\src\PaymentGateway.Api\appsettings.Development.json">
+      <Link>appsettings.Development.json</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>

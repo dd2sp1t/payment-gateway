@@ -39,4 +39,11 @@ internal static class HttpClientExtensions
 
         return list ?? [];
     }
+
+    public static async Task<List<JsonElement>> GetReceiptsAsync(this HttpClient client, string operationId)
+    {
+        var list = await client.GetFromJsonAsync<List<JsonElement>>($"/operations/{operationId}/receipts");
+
+        return list ?? [];
+    }
 }

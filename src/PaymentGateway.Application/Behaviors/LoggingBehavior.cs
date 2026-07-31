@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Text.Json;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using PaymentGateway.Application.Operations;
+using PaymentGateway.Application.Abstractions.Requests;
 
 internal sealed class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull

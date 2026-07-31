@@ -6,6 +6,7 @@ using PaymentGateway.Application.Operations.Commands.SubmitOperation;
 using PaymentGateway.Application.Operations.Models;
 using PaymentGateway.Application.Operations.Queries.GetOperation;
 using PaymentGateway.Application.Operations.Queries.GetOperationEvents;
+using PaymentGateway.Application.Operations.Queries.GetReceipts;
 
 namespace PaymentGateway.Api.Controllers;
 
@@ -71,13 +72,25 @@ public sealed class OperationsController : ControllerBase
     [HttpGet("{operationId}/events")]
     [ProducesResponseType<IReadOnlyList<OperationEventReadModel>>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<IReadOnlyList<OperationEventReadModel>>> GetOperationEvents(
         [FromRoute] string operationId,
         CancellationToken cancellationToken)
     {
         var response = await _sender.Send(new GetOperationEventsQuery(operationId), cancellationToken);
+
+        return Ok(response);
+    }
+
+    [HttpGet("{operationId}/receipts")]
+    [ProducesResponseType<IReadOnlyList<ReceiptReadModel>>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<IReadOnlyList<ReceiptReadModel>>> GetReceipts(
+        [FromRoute] string operationId,
+        CancellationToken cancellationToken)
+    {
+        var response = await _sender.Send(new GetReceiptsQuery(operationId), cancellationToken);
 
         return Ok(response);
     }

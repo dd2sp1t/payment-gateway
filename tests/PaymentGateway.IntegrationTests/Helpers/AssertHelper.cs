@@ -161,4 +161,74 @@ internal static class AssertHelper
             .Should()
             .ContainInOrder(expected);
     }
+
+    public static async Task AssertOperationHasSingleTerminalEventAndIgnoredAsync(HttpClient client, string operationId)
+    {
+        await Task.Delay(InitialDelay);
+
+        var operation = await client.GetOperationAsync(operationId);
+
+        var status = operation
+            .GetProperty("status")
+            .GetString();
+
+        status
+            .Should()
+            .BeOneOf("COMPLETED", "REJECTED");
+
+        await Task.Delay(StabilityDelay);
+
+        operation = await client.GetOperationAsync(operationId);
+
+        operation
+            .GetProperty("status")
+            .GetString()
+            .Should()
+            .Be(status);
+
+        var events = await client.GetEventsAsync(operationId);
+
+        events
+            .Should()
+            .HaveCount(4);
+
+        events[0]
+            .GetProperty("type")
+            .GetString()
+            .Should()
+            .Be("CREATED");
+
+        events[1]
+            .GetProperty("type")
+            .GetString()
+            .Should()
+            .Be("SUBMITTED");
+
+        events[2]
+            .GetProperty("type")
+            .GetString()
+            .Should()
+            .Be(status);
+
+        events[3]
+            .GetProperty("type")
+            .GetString()
+            .Should()
+            .Be("IGNORED");
+
+        var receipts = await client.GetReceiptsAsync(operationId);
+
+        receipts
+            .Should()
+            .HaveCount(2);
+
+        receipts
+            .Select(x => x.GetProperty("result").GetString())
+            .Should()
+            .BeEquivalentTo(
+            [
+            "COMPLETED",
+            "REJECTED"
+            ]);
+    }
 }

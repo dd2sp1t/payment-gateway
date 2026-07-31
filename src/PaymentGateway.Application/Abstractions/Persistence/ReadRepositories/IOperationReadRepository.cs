@@ -20,4 +20,8 @@ public interface IOperationReadRepository
         CancellationToken cancellationToken);
 
     Task<TimeSpan?> GetOldestProcessingAgeAsync(CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<ReceiptReadModel>> GetReceiptsAsync(
+        OperationId operationId,
+        CancellationToken cancellationToken);
 }

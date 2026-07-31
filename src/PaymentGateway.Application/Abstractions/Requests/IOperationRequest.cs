@@ -1,4 +1,4 @@
-namespace PaymentGateway.Application.Operations;
+namespace PaymentGateway.Application.Abstractions.Requests;
 
 public interface IOperationRequest
 {

@@ -17,6 +17,13 @@ internal sealed class RequestResponseLoggingMiddleware
     {
         await _next(context);
 
+        if (context.Request.Path.StartsWithSegments("/metrics")
+            || context.Request.Path.StartsWithSegments("/health")
+            || context.Request.Path.StartsWithSegments("/swagger"))
+        {
+            return;
+        }
+
         var operationId = context.Items.TryGetValue("OperationId", out var value)
             ? value?.ToString()
             : null;

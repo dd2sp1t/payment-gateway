@@ -1,4 +1,5 @@
 using MediatR;
+using PaymentGateway.Application.Abstractions.Requests;
 using PaymentGateway.Application.Operations.Models;
 
 namespace PaymentGateway.Application.Operations.Queries.GetOperation;

@@ -5,6 +5,7 @@ public interface IMetrics
     #region Application Requests
 
     IDisposable MeasureApplicationRequest(string requestName);
+    void ApplicationRequestConcurrencyRetry(string requestName);
 
     #endregion
 
@@ -36,7 +37,6 @@ public interface IMetrics
 
     void DispatchRetryScheduled();
     void DispatchRetryLimitReached();
-    void DispatchConcurrencyRetry();
 
     #endregion
 }
