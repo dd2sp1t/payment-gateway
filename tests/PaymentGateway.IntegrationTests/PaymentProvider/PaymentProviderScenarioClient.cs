@@ -7,13 +7,13 @@ using PaymentGateway.IntegrationTests.PaymentProvider.Steps;
 
 namespace PaymentGateway.IntegrationTests.PaymentProvider;
 
-public sealed class ScenarioPaymentProviderClient : IPaymentProviderClient
+public sealed class PaymentProviderScenarioClient : IPaymentProviderClient
 {
-    private readonly ILogger<ScenarioPaymentProviderClient> _logger;
+    private readonly ILogger<PaymentProviderScenarioClient> _logger;
     private readonly PaymentProviderScenarioStore _store;
 
-    public ScenarioPaymentProviderClient(
-        ILogger<ScenarioPaymentProviderClient> logger,
+    public PaymentProviderScenarioClient(
+        ILogger<PaymentProviderScenarioClient> logger,
         PaymentProviderScenarioStore store)
     {
         _logger = logger;

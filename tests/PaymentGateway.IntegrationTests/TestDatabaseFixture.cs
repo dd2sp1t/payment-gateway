@@ -1,12 +1,8 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
-using PaymentGateway.Application.Abstractions.PaymentProvider;
 using PaymentGateway.Application.BackgroundServices.DispatchOperations;
 using PaymentGateway.Infrastructure.Persistence;
-using PaymentGateway.IntegrationTests.PaymentProvider;
+using PaymentGateway.IntegrationTests.Extensions;
 using Testcontainers.PostgreSql;
 
 namespace PaymentGateway.IntegrationTests;
@@ -37,30 +33,15 @@ public sealed class TestDatabaseFixture : IAsyncLifetime
 
         Factory = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
-            {
-                builder.ConfigureServices(services =>
                 {
-                    services
-                        .ReplaceDbContext<PaymentGatewayDbContext>(connectionString)
-                        .ReplaceOptions(dispatchOptions);
-
-                    services.RemoveAll<PaymentProviderScenarioStore>();
-                    services.AddSingleton<PaymentProviderScenarioStore>();
-
-                    services.RemoveAll<CallbackDispatcher>();
-                    services.AddSingleton(sp =>
+                    builder.ConfigureServices(services =>
                     {
-                        var callbackClient = Factory.CreateClient();
-
-                        return new CallbackDispatcher(
-                            sp.GetRequiredService<ILogger<CallbackDispatcher>>(),
-                            callbackClient);
+                        services
+                            .ReplaceDbContext<PaymentGatewayDbContext>(connectionString)
+                            .ReplaceOptions(dispatchOptions)
+                            .ReplacePaymentProviderClient(Factory);
                     });
-
-                    services.RemoveAll<IPaymentProviderClient>();
-                    services.AddScoped<IPaymentProviderClient, ScenarioPaymentProviderClient>();
                 });
-            });
 
         var optionsBuilder = new DbContextOptionsBuilder<PaymentGatewayDbContext>();
         optionsBuilder.UseNpgsql(connectionString);

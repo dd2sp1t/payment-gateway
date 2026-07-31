@@ -540,12 +540,6 @@
                     "color": {
                         "mode": "palette-classic"
                     },
-                    "custom": {
-                        "axisPlacement": "left",
-                        "drawStyle": "bars",
-                        "fillOpacity": 100,
-                        "lineWidth": 1
-                    },
                     "decimals": 0,
                     "min": 0,
                     "unit": "none"
@@ -560,29 +554,31 @@
             },
             "id": 9,
             "options": {
-                "legend": {
+                "displayMode": "gradient",
+                "orientation": "horizontal",
+                "reduceOptions": {
                     "calcs": [
                         "lastNotNull"
                     ],
-                    "displayMode": "table",
-                    "placement": "bottom",
-                    "showLegend": true
+                    "fields": "",
+                    "values": false
                 },
-                "tooltip": {
-                    "mode": "single",
-                    "sort": "desc"
+                "showUnfilled": true,
+                "text": {
+                    "titleSize": 14,
+                    "valueSize": 20
                 }
             },
             "targets": [
                 {
                     "datasource": "Prometheus",
-                    "expr": "sum by (request_name) (increase(application_request_concurrency_retry_total[$__range]))",
-                    "legendFormat": "{{request_name}}",
+                    "expr": "sum by (application_request) (increase(application_request_concurrency_retry_total[$__range]))",
+                    "legendFormat": "{{application_request}}",
                     "refId": "A"
                 }
             ],
-            "title": "Application Concurrency Retries",
-            "type": "barchart"
+            "title": "Application Concurrency Retries by Request",
+            "type": "bargauge"
         },
         {
             "datasource": "Prometheus",
