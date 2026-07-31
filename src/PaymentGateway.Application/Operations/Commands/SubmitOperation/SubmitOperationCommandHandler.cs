@@ -54,7 +54,7 @@ internal sealed class SubmitOperationCommandHandler : IRequestHandler<SubmitOper
     {
         if (operation.Status != OperationStatus.Created)
         {
-            _logger.LogDebug(
+            _logger.LogInformation(
                 "Submit skipped. OperationId={OperationId} Status={Status}",
                 operation.OperationId,
                 operation.Status);
@@ -80,15 +80,11 @@ internal sealed class SubmitOperationCommandHandler : IRequestHandler<SubmitOper
 
             return (operation, NewlyScheduled: true);
         }
-        catch (DuplicateResourceException)
+        catch (DuplicateResourceException exception)
         {
-            _logger.LogInformation(
-                "Operation was submitted concurrently. OperationId={OperationId}",
-                operation.OperationId);
-
-            var actual = await _operationRepository.GetAsync(operation.OperationId, cancellationToken);
-
-            return (actual!, NewlyScheduled: false);
+            throw new ConcurrencyException(
+                "Optimistic concurrency conflict while submitting operation.",
+                exception);
         }
     }
 }

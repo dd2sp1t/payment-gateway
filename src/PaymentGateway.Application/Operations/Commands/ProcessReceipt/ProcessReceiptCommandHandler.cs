@@ -96,8 +96,7 @@ internal sealed class ProcessReceiptCommandHandler : IRequestHandler<ProcessRece
         catch (DuplicateResourceException exception)
             when (exception.Resource == nameof(OperationEvent))
         {
-            // TODO:
-            throw new ConcurrencyException("");
+            throw new ConcurrencyException("Optimistic concurrency conflict while processing receipt.");
         }
 
         switch (operation.Status)

@@ -43,7 +43,7 @@ var app = builder.Build();
 Log.Information("Application built.");
 
 app.UseMiddleware<OperationContextMiddleware>();
-app.UseMiddleware<RequestResponseLoggingMiddleware>();
+app.UseMiddleware<OperationIdLoggingMiddleware>();
 
 app.UseSwagger();
 app.UseSwaggerUI();
