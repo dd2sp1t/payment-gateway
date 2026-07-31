@@ -15,6 +15,10 @@ public class BasicFlowTests : IntegrationTestBase
         // arrange
         var operationId = $"op-basic-success-{Guid.NewGuid()}";
 
+        const string amount = "1000.00";
+        const string currency = "RUB";
+        const string description = "Оплата заказа";
+
         ScenarioStore
             .For(operationId)
             .SubmitAccepted()
@@ -23,16 +27,29 @@ public class BasicFlowTests : IntegrationTestBase
                 delay: TimeSpan.FromMilliseconds(500));
 
         // act
-        (await Client.CreateOperationAsync(operationId)).EnsureSuccessStatusCode();
-        (await Client.SubmitOperationAsync(operationId)).EnsureSuccessStatusCode();
+        var createResponse = await Client.CreateOperationAsync(operationId, amount, currency, description);
 
-        await ScenarioStore.DispatchNextCallbackAsync(operationId);
+        await AssertHelper.AssertOperationCreatedAsync(
+            createResponse,
+            expectedOperationId: operationId,
+            expectedAmount: amount,
+            expectedCurrency: currency,
+            expectedDescription: description);
+
+        var submitResponse = await Client.SubmitOperationAsync(operationId);
+
+        await AssertHelper.AssertSubmitScheduledAsync(submitResponse);
+
+        var callbackResponse = await ScenarioStore.DispatchNextCallbackAsync(operationId);
+
+        await AssertHelper.AssertCallbackAcceptedAsync(callbackResponse);
+
 
         // assert
         await AssertHelper.AssertStatusIsStable(
             Client,
             operationId,
-            "COMPLETED");
+            expectedStatus: "COMPLETED");
 
         var events = await Client.GetEventsAsync(operationId);
 
@@ -49,6 +66,10 @@ public class BasicFlowTests : IntegrationTestBase
         // arrange
         var operationId = $"op-basic-rejected-{Guid.NewGuid()}";
 
+        const string amount = "1000.00";
+        const string currency = "RUB";
+        const string description = "Оплата заказа";
+
         ScenarioStore
             .For(operationId)
             .SubmitAccepted()
@@ -57,16 +78,28 @@ public class BasicFlowTests : IntegrationTestBase
                 delay: TimeSpan.FromMilliseconds(500));
 
         // act
-        (await Client.CreateOperationAsync(operationId)).EnsureSuccessStatusCode();
-        (await Client.SubmitOperationAsync(operationId)).EnsureSuccessStatusCode();
+        var createResponse = await Client.CreateOperationAsync(operationId, amount, currency, description);
 
-        await ScenarioStore.DispatchNextCallbackAsync(operationId);
+        await AssertHelper.AssertOperationCreatedAsync(
+            createResponse,
+            expectedOperationId: operationId,
+            expectedAmount: amount,
+            expectedCurrency: currency,
+            expectedDescription: description);
+
+        var submitResponse = await Client.SubmitOperationAsync(operationId);
+
+        await AssertHelper.AssertSubmitScheduledAsync(submitResponse);
+
+        var callbackResponse = await ScenarioStore.DispatchNextCallbackAsync(operationId);
+
+        await AssertHelper.AssertCallbackAcceptedAsync(callbackResponse);
 
         // assert
         await AssertHelper.AssertStatusIsStable(
             Client,
             operationId,
-            "REJECTED");
+            expectedStatus: "REJECTED");
 
         var events = await Client.GetEventsAsync(operationId);
 

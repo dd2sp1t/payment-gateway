@@ -6,9 +6,9 @@ internal static class HttpClientExtensions
     public static Task<HttpResponseMessage> CreateOperationAsync(
         this HttpClient client,
         string operationId,
-        string amount = "100.00",
-        string currency = "RUB",
-        string description = "integration_test")
+        string amount,
+        string currency,
+        string description)
     {
         return client.PostAsJsonAsync(
             "/operations",

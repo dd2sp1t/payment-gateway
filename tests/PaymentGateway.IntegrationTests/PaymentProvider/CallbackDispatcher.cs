@@ -4,22 +4,20 @@ using Microsoft.Extensions.Logging;
 using PaymentGateway.Domain.Operations;
 using PaymentGateway.IntegrationTests.PaymentProvider.Steps;
 
-public sealed class ScenarioCallbackDispatcher
+namespace PaymentGateway.IntegrationTests.PaymentProvider
 {
-    private readonly ILogger<ScenarioCallbackDispatcher> _logger;
-    private readonly HttpClient _httpClient;
-
-    public ScenarioCallbackDispatcher(
-        ILogger<ScenarioCallbackDispatcher> logger,
-        HttpClient httpClient)
+    public sealed class CallbackDispatcher
     {
-        _logger = logger;
-        _httpClient = httpClient;
-    }
+        private readonly ILogger<CallbackDispatcher> _logger;
+        private readonly HttpClient _httpClient;
 
-    public Task DispatchAsync(string operationId, Guid providerPaymentId, Callback callback)
-    {
-        return Task.Run(async () =>
+        public CallbackDispatcher(ILogger<CallbackDispatcher> logger, HttpClient httpClient)
+        {
+            _logger = logger;
+            _httpClient = httpClient;
+        }
+
+        public async Task<HttpResponseMessage?> DispatchAsync(string operationId, Guid providerPaymentId, Callback callback)
         {
             try
             {
@@ -69,6 +67,8 @@ public sealed class ScenarioCallbackDispatcher
                     providerPaymentId,
                     response.StatusCode,
                     responseBody);
+
+                return response;
             }
             catch (Exception exception)
             {
@@ -77,7 +77,9 @@ public sealed class ScenarioCallbackDispatcher
                     "Callback failed. OperationId={OperationId} ProviderPaymentId={ProviderPaymentId}",
                     operationId,
                     providerPaymentId);
+
+                return null;
             }
-        });
+        }
     }
 }

@@ -5,7 +5,9 @@ namespace PaymentGateway.IntegrationTests.Tests.Scenarios;
 
 public class EarlyCallbackTests : IntegrationTestBase
 {
-    public EarlyCallbackTests(TestDatabaseFixture fixture) : base(fixture) { }
+    public EarlyCallbackTests(TestDatabaseFixture fixture) : base(fixture)
+    {
+    }
 
     [Fact]
     public async Task CompletedReceipt_BeforeProviderResponse_ShouldCompleteOperation()
@@ -13,27 +15,43 @@ public class EarlyCallbackTests : IntegrationTestBase
         // arrange
         var operationId = $"op-early-completed-{Guid.NewGuid()}";
 
+        const string amount = "1000.00";
+        const string currency = "RUB";
+        const string description = "Оплата заказа";
+
         ScenarioStore
             .For(operationId)
             .SubmitAccepted(delay: TimeSpan.FromMilliseconds(5000))
             .Callback(
-                result: ReceiptResult.Completed,
+                ReceiptResult.Completed,
                 delay: TimeSpan.FromMilliseconds(1000));
 
-        // act
-        (await Client.CreateOperationAsync(operationId)).EnsureSuccessStatusCode();
+        var createResponse = await Client.CreateOperationAsync(operationId, amount, currency, description);
 
+        await AssertHelper.AssertOperationCreatedAsync(
+            createResponse,
+            expectedOperationId: operationId,
+            expectedAmount: amount,
+            expectedCurrency: currency,
+            expectedDescription: description);
+
+        // act
         var submitTask = Client.SubmitOperationAsync(operationId);
 
-        await ScenarioStore.DispatchNextCallbackAsync(operationId);
+        var callbackResponse = await ScenarioStore.DispatchNextCallbackAsync(operationId);
 
-        (await submitTask).EnsureSuccessStatusCode();
+        await AssertHelper.AssertCallbackAcceptedAsync(callbackResponse);
+
+
+        var submitResponse = await submitTask;
+
+        await AssertHelper.AssertSubmitScheduledAsync(submitResponse);
 
         // assert
         await AssertHelper.AssertStatusIsStable(
             Client,
             operationId,
-            "COMPLETED");
+            expectedStatus: "COMPLETED");
 
         var events = await Client.GetEventsAsync(operationId);
 
@@ -50,27 +68,43 @@ public class EarlyCallbackTests : IntegrationTestBase
         // arrange
         var operationId = $"op-early-rejected-{Guid.NewGuid()}";
 
+        const string amount = "1000.00";
+        const string currency = "RUB";
+        const string description = "Оплата заказа";
+
         ScenarioStore
             .For(operationId)
             .SubmitAccepted(delay: TimeSpan.FromMilliseconds(5000))
             .Callback(
-                result: ReceiptResult.Rejected,
+                ReceiptResult.Rejected,
                 delay: TimeSpan.FromMilliseconds(1000));
 
-        // act
-        (await Client.CreateOperationAsync(operationId)).EnsureSuccessStatusCode();
+        var createResponse = await Client.CreateOperationAsync(operationId, amount, currency, description);
 
+        await AssertHelper.AssertOperationCreatedAsync(
+            createResponse,
+            expectedOperationId: operationId,
+            expectedAmount: amount,
+            expectedCurrency: currency,
+            expectedDescription: description);
+
+        // act
         var submitTask = Client.SubmitOperationAsync(operationId);
 
-        await ScenarioStore.DispatchNextCallbackAsync(operationId);
+        var callbackResponse = await ScenarioStore.DispatchNextCallbackAsync(operationId);
 
-        (await submitTask).EnsureSuccessStatusCode();
+        await AssertHelper.AssertCallbackAcceptedAsync(callbackResponse);
+
+
+        var submitResponse = await submitTask;
+
+        await AssertHelper.AssertSubmitScheduledAsync(submitResponse);
 
         // assert
         await AssertHelper.AssertStatusIsStable(
             Client,
             operationId,
-            "REJECTED");
+            expectedStatus: "REJECTED");
 
         var events = await Client.GetEventsAsync(operationId);
 

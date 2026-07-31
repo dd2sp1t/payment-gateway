@@ -17,6 +17,10 @@ public class SubmitConcurrencyTests : IntegrationTestBase
         // arrange
         var operationId = $"op-concurrent-{Guid.NewGuid()}";
 
+        const string amount = "1000.00";
+        const string currency = "RUB";
+        const string description = "Оплата заказа";
+
         const int concurrentCount = 10;
 
         for (var i = 0; i < concurrentCount; i++)
@@ -32,8 +36,14 @@ public class SubmitConcurrencyTests : IntegrationTestBase
                 ReceiptResult.Completed,
                 delay: TimeSpan.FromMilliseconds(500));
 
-        (await Client.CreateOperationAsync(operationId))
-            .EnsureSuccessStatusCode();
+        var createResponse = await Client.CreateOperationAsync(operationId, amount, currency, description);
+
+        await AssertHelper.AssertOperationCreatedAsync(
+            createResponse,
+            expectedOperationId: operationId,
+            expectedAmount: amount,
+            expectedCurrency: currency,
+            expectedDescription: description);
 
         // act
         var submitResponses = await Task.WhenAll(
@@ -52,12 +62,26 @@ public class SubmitConcurrencyTests : IntegrationTestBase
                 r.StatusCode == HttpStatusCode.Accepted ||
                 r.StatusCode == HttpStatusCode.OK);
 
-        await ScenarioStore.DispatchNextCallbackAsync(operationId);
+        foreach (var response in submitResponses)
+        {
+            if (response.StatusCode == HttpStatusCode.Accepted)
+            {
+                await AssertHelper.AssertSubmitScheduledAsync(response);
+            }
+            else
+            {
+                await AssertHelper.AssertSubmitCurrentStateAsync(response);
+            }
+        }
+
+        var callbackResponse = await ScenarioStore.DispatchNextCallbackAsync(operationId);
+
+        await AssertHelper.AssertCallbackAcceptedAsync(callbackResponse);
 
         await AssertHelper.AssertStatusIsStable(
             Client,
             operationId,
-            "COMPLETED");
+            expectedStatus: "COMPLETED");
 
         var events = await Client.GetEventsAsync(operationId);
 

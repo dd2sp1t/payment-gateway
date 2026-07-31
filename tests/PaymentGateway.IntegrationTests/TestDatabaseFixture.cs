@@ -47,13 +47,13 @@ public sealed class TestDatabaseFixture : IAsyncLifetime
                     services.RemoveAll<PaymentProviderScenarioStore>();
                     services.AddSingleton<PaymentProviderScenarioStore>();
 
-                    services.RemoveAll<ScenarioCallbackDispatcher>();
+                    services.RemoveAll<CallbackDispatcher>();
                     services.AddSingleton(sp =>
                     {
                         var callbackClient = Factory.CreateClient();
 
-                        return new ScenarioCallbackDispatcher(
-                            sp.GetRequiredService<ILogger<ScenarioCallbackDispatcher>>(),
+                        return new CallbackDispatcher(
+                            sp.GetRequiredService<ILogger<CallbackDispatcher>>(),
                             callbackClient);
                     });
 

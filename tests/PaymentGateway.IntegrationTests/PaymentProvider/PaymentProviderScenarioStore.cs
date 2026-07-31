@@ -11,14 +11,14 @@ public sealed class PaymentProviderScenarioStore
     private readonly ConcurrentDictionary<string, PaymentProviderScenarioBuilder> _builders = new();
     private readonly ConcurrentDictionary<string, Guid> _paymentIds = new();
     private readonly ILogger<PaymentProviderScenarioStore> _logger;
-    private readonly ScenarioCallbackDispatcher _dispatcher;
+    private readonly CallbackDispatcher _callbackDispatcher;
 
     public PaymentProviderScenarioStore(
         ILogger<PaymentProviderScenarioStore> logger,
-        ScenarioCallbackDispatcher dispatcher)
+        CallbackDispatcher callbackDispatcher)
     {
         _logger = logger;
-        _dispatcher = dispatcher;
+        _callbackDispatcher = callbackDispatcher;
     }
 
     public PaymentProviderScenarioBuilder For(string operationId)
@@ -89,7 +89,7 @@ public sealed class PaymentProviderScenarioStore
         return id;
     }
 
-    public Task DispatchNextCallbackAsync(string operationId)
+    public async Task<HttpResponseMessage?> DispatchNextCallbackAsync(string operationId)
     {
         var builder = GetBuilder(operationId);
 
@@ -97,7 +97,7 @@ public sealed class PaymentProviderScenarioStore
 
         if (callback is null)
         {
-            return Task.CompletedTask;
+            return null;
         }
 
         var id = callback.ProviderPaymentId ?? GetProviderPaymentId(operationId);
@@ -110,7 +110,9 @@ public sealed class PaymentProviderScenarioStore
             callback,
             id);
 
-        return _dispatcher.DispatchAsync(operationId, id, callback);
+        var response = await _callbackDispatcher.DispatchAsync(operationId, id, callback);
+
+        return response;
     }
 
     public void Clear()

@@ -10,7 +10,7 @@ public abstract class IntegrationTestBase : IDisposable
 
     protected IServiceScope Scope { get; }
 
-    protected PaymentProviderScenarioStore ScenarioStore { get; }
+    protected internal PaymentProviderScenarioStore ScenarioStore { get; }
 
     protected IntegrationTestBase(TestDatabaseFixture fixture)
     {

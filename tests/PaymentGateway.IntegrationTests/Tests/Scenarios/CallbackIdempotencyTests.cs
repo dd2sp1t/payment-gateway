@@ -15,24 +15,53 @@ public class CallbackIdempotencyTests : IntegrationTestBase
         // arrange
         var operationId = $"op-duplicate-completed-{Guid.NewGuid()}";
 
+        const string amount = "1000.00";
+        const string currency = "RUB";
+        const string description = "Оплата заказа";
+
+        const int concurrentCount = 10;
+
         ScenarioStore
             .For(operationId)
-            .SubmitAccepted()
-            .Callback(ReceiptResult.Completed, delay: TimeSpan.FromMilliseconds(500))
-            .Callback(ReceiptResult.Completed, delay: TimeSpan.FromMilliseconds(1000));
+            .SubmitAccepted();
+
+        for (var i = 0; i < concurrentCount; i++)
+        {
+            ScenarioStore
+                .For(operationId)
+                .Callback(
+                    result: ReceiptResult.Completed,
+                    delay: TimeSpan.FromMilliseconds(500));
+        }
+
+        var createResponse = await Client.CreateOperationAsync(operationId, amount, currency, description);
+
+        await AssertHelper.AssertOperationCreatedAsync(
+            createResponse,
+            expectedOperationId: operationId,
+            expectedAmount: amount,
+            expectedCurrency: currency,
+            expectedDescription: description);
+
+        var submitResponse = await Client.SubmitOperationAsync(operationId);
+
+        await AssertHelper.AssertSubmitScheduledAsync(submitResponse);
 
         // act
-        (await Client.CreateOperationAsync(operationId)).EnsureSuccessStatusCode();
-        (await Client.SubmitOperationAsync(operationId)).EnsureSuccessStatusCode();
-
-        await ScenarioStore.DispatchNextCallbackAsync(operationId);
-        await ScenarioStore.DispatchNextCallbackAsync(operationId);
+        var callbackResponses = await Task.WhenAll(
+            Enumerable.Range(0, concurrentCount)
+                .Select(_ => ScenarioStore.DispatchNextCallbackAsync(operationId)));
 
         // assert
+        foreach (var response in callbackResponses)
+        {
+            await AssertHelper.AssertCallbackAcceptedAsync(response);
+        }
+
         await AssertHelper.AssertStatusIsStable(
             Client,
             operationId,
-            "COMPLETED");
+            expectedStatus: "COMPLETED");
 
         var events = await Client.GetEventsAsync(operationId);
 
@@ -49,24 +78,53 @@ public class CallbackIdempotencyTests : IntegrationTestBase
         // arrange
         var operationId = $"op-duplicate-rejected-{Guid.NewGuid()}";
 
+        const string amount = "1000.00";
+        const string currency = "RUB";
+        const string description = "Оплата заказа";
+
+        const int concurrentCount = 10;
+
         ScenarioStore
             .For(operationId)
-            .SubmitAccepted()
-            .Callback(ReceiptResult.Rejected, delay: TimeSpan.FromMilliseconds(500))
-            .Callback(ReceiptResult.Rejected, delay: TimeSpan.FromMilliseconds(1000));
+            .SubmitAccepted();
+
+        for (var i = 0; i < concurrentCount; i++)
+        {
+            ScenarioStore
+                .For(operationId)
+                .Callback(
+                    result: ReceiptResult.Rejected,
+                    delay: TimeSpan.FromMilliseconds(500));
+        }
+
+        var createResponse = await Client.CreateOperationAsync(operationId, amount, currency, description);
+
+        await AssertHelper.AssertOperationCreatedAsync(
+            createResponse,
+            expectedOperationId: operationId,
+            expectedAmount: amount,
+            expectedCurrency: currency,
+            expectedDescription: description);
+
+        var submitResponse = await Client.SubmitOperationAsync(operationId);
+
+        await AssertHelper.AssertSubmitScheduledAsync(submitResponse);
 
         // act
-        (await Client.CreateOperationAsync(operationId)).EnsureSuccessStatusCode();
-        (await Client.SubmitOperationAsync(operationId)).EnsureSuccessStatusCode();
-
-        await ScenarioStore.DispatchNextCallbackAsync(operationId);
-        await ScenarioStore.DispatchNextCallbackAsync(operationId);
+        var callbackResponses = await Task.WhenAll(
+            Enumerable.Range(0, concurrentCount)
+                .Select(_ => ScenarioStore.DispatchNextCallbackAsync(operationId)));
 
         // assert
+        foreach (var response in callbackResponses)
+        {
+            await AssertHelper.AssertCallbackAcceptedAsync(response);
+        }
+
         await AssertHelper.AssertStatusIsStable(
             Client,
             operationId,
-            "REJECTED");
+            expectedStatus: "REJECTED");
 
         var events = await Client.GetEventsAsync(operationId);
 
@@ -83,24 +141,45 @@ public class CallbackIdempotencyTests : IntegrationTestBase
         // arrange
         var operationId = $"op-late-opposite-{Guid.NewGuid()}";
 
+        const string amount = "1000.00";
+        const string currency = "RUB";
+        const string description = "Оплата заказа";
+
         ScenarioStore
             .For(operationId)
             .SubmitAccepted()
-            .Callback(ReceiptResult.Completed, delay: TimeSpan.FromMilliseconds(500))
-            .Callback(ReceiptResult.Rejected, delay: TimeSpan.FromMilliseconds(1000));
+            .Callback(
+                result: ReceiptResult.Completed,
+                delay: TimeSpan.FromMilliseconds(500))
+            .Callback(
+                result: ReceiptResult.Rejected,
+                delay: TimeSpan.FromMilliseconds(1000));
+
+        var createResponse = await Client.CreateOperationAsync(operationId, amount, currency, description);
+
+        await AssertHelper.AssertOperationCreatedAsync(
+            createResponse,
+            expectedOperationId: operationId,
+            expectedAmount: amount,
+            expectedCurrency: currency,
+            expectedDescription: description);
+
+        var submitResponse = await Client.SubmitOperationAsync(operationId);
+
+        await AssertHelper.AssertSubmitScheduledAsync(submitResponse);
 
         // act
-        (await Client.CreateOperationAsync(operationId)).EnsureSuccessStatusCode();
-        (await Client.SubmitOperationAsync(operationId)).EnsureSuccessStatusCode();
-
-        await ScenarioStore.DispatchNextCallbackAsync(operationId);
-        await ScenarioStore.DispatchNextCallbackAsync(operationId);
+        var firstCallback = await ScenarioStore.DispatchNextCallbackAsync(operationId);
+        var secondCallback = await ScenarioStore.DispatchNextCallbackAsync(operationId);
 
         // assert
+        await AssertHelper.AssertCallbackAcceptedAsync(firstCallback);
+        await AssertHelper.AssertCallbackAcceptedAsync(secondCallback);
+
         await AssertHelper.AssertStatusIsStable(
             Client,
             operationId,
-            "COMPLETED");
+            expectedStatus: "COMPLETED");
 
         var events = await Client.GetEventsAsync(operationId);
 
