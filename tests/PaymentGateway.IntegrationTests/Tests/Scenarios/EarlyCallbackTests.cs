@@ -77,7 +77,7 @@ public class EarlyCallbackTests : IntegrationTestBase
             .For(operationId)
             .SubmitAccepted(
                 delay: TimeSpan.FromMilliseconds(5000))
-            .SubmitAccepted() // to prevent "No submit configured." while "Concurrency conflict."
+            .SubmitAccepted() // seed a valid submit so the dispatcher reaches the providerPaymentId mismatch check
             .Callback(
                 result: ReceiptResult.Rejected,
                 delay: TimeSpan.FromMilliseconds(1000));

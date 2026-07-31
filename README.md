@@ -105,11 +105,19 @@ dotnet test
 
 ### Базовый жизненный цикл операции
 
+- операция успешно завершается после подтверждения провайдера и callback со статусом `Completed`;
+- операция отклоняется после подтверждения провайдера и callback со статусом `Rejected`.
+
 ```bash
 dotnet test --filter BasicFlowTests
 ```
 
 ### Идемпотентность обработки callback'ов
+
+- повторный callback со статусом `Completed` игнорируется;
+- повторный callback со статусом `Rejected` игнорируется.
+- после `Completed` приходит `Rejected` — создается событие `Ignored`;
+- конкурентные callback `Completed` и `Rejected` корректно обрабатываются, проигравший сохраняется как `Ignored`.
 
 ```bash
 dotnet test --filter CallbackIdempotencyTests
@@ -117,11 +125,24 @@ dotnet test --filter CallbackIdempotencyTests
 
 ### Callback раньше ответа провайдера
 
+- callback `Completed` приходит раньше HTTP-ответа провайдера;
+- callback `Rejected` приходит раньше HTTP-ответа провайдера.
+
 ```bash
 dotnet test --filter EarlyCallbackTests
 ```
 
+### Несовпадающий providerPaymentId
+
+- callback с другим `ProviderPaymentId` отклоняется с ошибкой `409 Conflict`.
+
+```bash
+dotnet test --filter ProviderPaymentIdMismatchTests
+```
+
 ### Конкурентный submit одной операции
+
+- несколько одновременных запросов `Submit` приводят только к одной отправке операции провайдеру.
 
 ```bash
 dotnet test --filter SubmitConcurrencyTests
@@ -172,7 +193,8 @@ dotnet test --filter SubmitConcurrencyTests
 - количество выполненных запросов;
 - latency (p50 / p95 / average);
 - throughput;
-- heatmap времени выполнения.
+- heatmap времени выполнения;
+- количество автоматических повторных выполнений команд при возникновении конфликтов оптимистичной блокировки (с разбивкой по типу команды).
 
 ### Dispatch
 

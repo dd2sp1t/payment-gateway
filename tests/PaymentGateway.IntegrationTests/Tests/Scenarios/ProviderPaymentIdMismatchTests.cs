@@ -24,7 +24,9 @@ public sealed class ProviderPaymentIdMismatchTests : IntegrationTestBase
         var callbackPaymentId = Guid.NewGuid();
         var submitPaymentId = Guid.NewGuid();
 
-        submitPaymentId.Should().NotBe(callbackPaymentId);
+        submitPaymentId
+            .Should()
+            .NotBe(callbackPaymentId);
 
         ScenarioStore
             .For(operationId)
@@ -62,9 +64,6 @@ public sealed class ProviderPaymentIdMismatchTests : IntegrationTestBase
 
         await AssertHelper.AssertSubmitScheduledAsync(submitResponse);
 
-        // provider returns DIFFERENT providerPaymentId
-        // AttachProviderPayment() throws ProviderPaymentMismatchException
-
         // assert
         await AssertHelper.AssertStatusIsStable(
             Client,
@@ -93,7 +92,9 @@ public sealed class ProviderPaymentIdMismatchTests : IntegrationTestBase
         var submitPaymentId = Guid.NewGuid();
         var callbackPaymentId = Guid.NewGuid();
 
-        submitPaymentId.Should().NotBe(callbackPaymentId);
+        submitPaymentId
+            .Should()
+            .NotBe(callbackPaymentId);
 
         ScenarioStore
             .For(operationId)
@@ -131,11 +132,6 @@ public sealed class ProviderPaymentIdMismatchTests : IntegrationTestBase
         callbackResponse.StatusCode
             .Should()
             .Be(HttpStatusCode.Conflict);
-
-        // await AssertHelper.AssertStatusIsStable(
-        //     Client,
-        //     operationId,
-        //     expectedStatus: "PROCESSING");
 
         var events = await Client.GetEventsAsync(operationId);
 
