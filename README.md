@@ -97,8 +97,8 @@ dotnet test
 
 ### Базовый жизненный цикл операции
 
-- операция успешно завершается после подтверждения провайдера и callback со статусом `Completed`;
-- операция отклоняется после подтверждения провайдера и callback со статусом `Rejected`.
+- операция успешно завершается после подтверждения провайдера и callback со статусом `COMPLETED`;
+- операция отклоняется после подтверждения провайдера и callback со статусом `REJECTED`.
 
 ```bash
 dotnet test --filter BasicFlowTests
@@ -106,10 +106,10 @@ dotnet test --filter BasicFlowTests
 
 ### Идемпотентность обработки callback'ов
 
-- повторный callback со статусом `Completed` игнорируется;
-- повторный callback со статусом `Rejected` игнорируется;
-- после `Completed` приходит `Rejected` — создается событие `Ignored`;
-- конкурентные callback `Completed` и `Rejected` корректно обрабатываются, проигравший сохраняется как `Ignored`.
+- повторный callback со статусом `COMPLETED` игнорируется;
+- повторный callback со статусом `REJECTED` игнорируется;
+- после `COMPLETED` приходит `REJECTED` — создается событие `IGNORED`;
+- конкурентные callback `COMPLETED` и `REJECTED` корректно обрабатываются, проигравший создает событие `IGNORED`.
 
 ```bash
 dotnet test --filter CallbackIdempotencyTests
@@ -117,16 +117,16 @@ dotnet test --filter CallbackIdempotencyTests
 
 ### Callback раньше ответа провайдера
 
-- callback `Completed` приходит раньше HTTP-ответа провайдера, терминальный статус сохраняется и не переводится обратно в `PROCESSING`;
-- callback `Rejected` приходит раньше HTTP-ответа провайдера, терминальный статус сохраняется и не переводится обратно в `PROCESSING`.
+- callback `COMPLETED` приходит раньше HTTP-ответа провайдера, терминальный статус сохраняется;
+- callback `REJECTED` приходит раньше HTTP-ответа провайдера, терминальный статус сохраняется.
 
 ```bash
 dotnet test --filter EarlyCallbackTests
 ```
 
-### Несовпадающий providerPaymentId
+### Несовпадающий ProviderPaymentId
 
-- callback с другим `ProviderPaymentId` отклоняется с ошибкой `409 Conflict`.
+- callback с другим `ProviderPaymentId` отклоняется с ошибкой `409 Conflict`;
 - submit с другим `ProviderPaymentId` после callback безопасно завершается.
 
 ```bash
