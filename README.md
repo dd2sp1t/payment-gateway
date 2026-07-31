@@ -107,7 +107,7 @@ dotnet test --filter BasicFlowTests
 ### Идемпотентность обработки callback'ов
 
 - повторный callback со статусом `Completed` игнорируется;
-- повторный callback со статусом `Rejected` игнорируется.
+- повторный callback со статусом `Rejected` игнорируется;
 - после `Completed` приходит `Rejected` — создается событие `Ignored`;
 - конкурентные callback `Completed` и `Rejected` корректно обрабатываются, проигравший сохраняется как `Ignored`.
 
@@ -135,7 +135,7 @@ dotnet test --filter ProviderPaymentIdMismatchTests
 
 ### Конкурентный submit одной операции
 
-- несколько одновременных запросов `Submit` приводят только к одной отправке операции провайдеру.
+- несколько одновременных submit-запросов приводят только к одной отправке операции провайдеру.
 
 ```bash
 dotnet test --filter SubmitConcurrencyTests
