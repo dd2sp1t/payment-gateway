@@ -1,4 +1,5 @@
 using PaymentGateway.Api.ExceptionHandling;
+using PaymentGateway.Api.Middleware;
 using PaymentGateway.Api.Serialization;
 using PaymentGateway.Application;
 using PaymentGateway.Infrastructure;
@@ -40,6 +41,9 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 Log.Information("Application built.");
+
+app.UseMiddleware<OperationContextMiddleware>();
+app.UseMiddleware<RequestResponseLoggingMiddleware>();
 
 app.UseSwagger();
 app.UseSwaggerUI();

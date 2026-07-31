@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Text.Json;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using PaymentGateway.Application.Operations;
 
 internal sealed class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
@@ -22,9 +23,11 @@ internal sealed class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<T
 
         var requestName = typeof(TRequest).Name;
         var requestBody = JsonSerializer.Serialize(request);
+        var operationId = (request as IOperationRequest)?.OperationId;
 
         _logger.LogDebug(
-            "Handling request. Request={Request} Body={Body}",
+            "Handling request. OperationId={OperationId} Request={Request} Body={Body}",
+            operationId,
             requestName,
             requestBody);
 
@@ -35,7 +38,8 @@ internal sealed class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<T
             var elapsed = Stopwatch.GetElapsedTime(start);
 
             _logger.LogDebug(
-                "Request handled. Request={Request} DurationMs={DurationMs}",
+                "Request handled. OperationId={OperationId} Request={Request} DurationMs={DurationMs}",
+                operationId,
                 requestName,
                 elapsed.TotalMilliseconds);
 
@@ -47,7 +51,8 @@ internal sealed class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<T
 
             _logger.LogError(
                 exception,
-                "Request failed. Request={Request} DurationMs={DurationMs} Body={Body}",
+                "Request failed. OperationId={OperationId} Request={Request} DurationMs={DurationMs} Body={Body}",
+                operationId,
                 requestName,
                 elapsed.TotalMilliseconds,
                 requestBody);

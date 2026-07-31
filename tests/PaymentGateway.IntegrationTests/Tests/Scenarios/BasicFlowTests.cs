@@ -17,7 +17,7 @@ public class BasicFlowTests : IntegrationTestBase
 
         const string amount = "1000.00";
         const string currency = "RUB";
-        const string description = "Оплата заказа";
+        const string description = "integration_test";
 
         ScenarioStore
             .For(operationId)
@@ -68,7 +68,7 @@ public class BasicFlowTests : IntegrationTestBase
 
         const string amount = "1000.00";
         const string currency = "RUB";
-        const string description = "Оплата заказа";
+        const string description = "integration_test";
 
         ScenarioStore
             .For(operationId)

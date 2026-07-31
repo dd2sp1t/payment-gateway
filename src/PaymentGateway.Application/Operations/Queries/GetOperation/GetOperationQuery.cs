@@ -3,4 +3,5 @@ using PaymentGateway.Application.Operations.Models;
 
 namespace PaymentGateway.Application.Operations.Queries.GetOperation;
 
-public sealed record GetOperationQuery(string OperationId) : IRequest<OperationResponse>;
+public sealed record GetOperationQuery(string OperationId)
+    : IRequest<OperationResponse>, IOperationRequest;

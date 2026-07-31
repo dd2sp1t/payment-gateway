@@ -45,7 +45,9 @@ internal sealed class DispatchOperationCommandHandler : IRequestHandler<Dispatch
     {
         for (var concurrencyAttempt = 0; concurrencyAttempt <= MaxConcurrencyRetries; concurrencyAttempt++)
         {
-            var operation = await _operationRepository.GetAsync(request.OperationId, cancellationToken);
+            var operation = await _operationRepository.GetAsync(
+                (OperationId)request.OperationId,
+                cancellationToken);
 
             if (operation is null)
             {
@@ -128,7 +130,7 @@ internal sealed class DispatchOperationCommandHandler : IRequestHandler<Dispatch
                 "Dispatch failed. OperationId={OperationId} RetryCount={RetryCount}",
                 operation.OperationId,
                 operation.RetryCount);
- 
+
             throw;
         }
     }

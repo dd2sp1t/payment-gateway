@@ -8,4 +8,4 @@ public sealed record CreateOperationCommand(
     string Amount,
     string Currency,
     string Description)
-    : IRequest<OperationResponse>;
+    : IRequest<OperationResponse>, IOperationRequest;

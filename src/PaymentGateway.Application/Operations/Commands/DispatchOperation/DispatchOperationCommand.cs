@@ -1,6 +1,6 @@
 using MediatR;
-using PaymentGateway.Domain.Operations;
 
 namespace PaymentGateway.Application.Operations.Commands.DispatchOperation;
 
-public sealed record DispatchOperationCommand(OperationId OperationId) : IRequest;
+public sealed record DispatchOperationCommand(string OperationId)
+    : IRequest, IOperationRequest;

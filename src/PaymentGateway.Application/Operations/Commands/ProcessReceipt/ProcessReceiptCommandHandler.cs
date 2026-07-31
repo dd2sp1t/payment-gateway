@@ -90,6 +90,7 @@ internal sealed class ProcessReceiptCommandHandler : IRequestHandler<ProcessRece
                 request.OperationId,
                 request.ProviderPaymentId);
 
+            // TODO:
             return;
         }
 
@@ -108,8 +109,9 @@ internal sealed class ProcessReceiptCommandHandler : IRequestHandler<ProcessRece
         operation.ClearUncommittedReceipts();
 
         _logger.LogInformation(
-            "Receipt processed. OperationId={OperationId} Status={Status}",
+            "Receipt processed. OperationId={OperationId} ProviderPaymentId={ProviderPaymentId} Status={Status}",
             operation.OperationId,
+            operation.ProviderPaymentId,
             operation.Status);
     }
 }

@@ -17,7 +17,7 @@ public class CallbackIdempotencyTests : IntegrationTestBase
 
         const string amount = "1000.00";
         const string currency = "RUB";
-        const string description = "Оплата заказа";
+        const string description = "integration_test";
 
         const int concurrentCount = 10;
 
@@ -80,7 +80,7 @@ public class CallbackIdempotencyTests : IntegrationTestBase
 
         const string amount = "1000.00";
         const string currency = "RUB";
-        const string description = "Оплата заказа";
+        const string description = "integration_test";
 
         const int concurrentCount = 10;
 
@@ -143,7 +143,7 @@ public class CallbackIdempotencyTests : IntegrationTestBase
 
         const string amount = "1000.00";
         const string currency = "RUB";
-        const string description = "Оплата заказа";
+        const string description = "integration_test";
 
         ScenarioStore
             .For(operationId)

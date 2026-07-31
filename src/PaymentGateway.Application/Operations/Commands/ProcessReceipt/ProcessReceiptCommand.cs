@@ -9,4 +9,4 @@ public sealed record ProcessReceiptCommand(
     ReceiptResult Result,
     string Message,
     DateTimeOffset OccurredAt)
-    : IRequest;
+    : IRequest, IOperationRequest;
