@@ -26,7 +26,15 @@ internal abstract class PeriodicBackgroundService : BackgroundService
         {
             try
             {
+                _logger.LogInformation(
+                    "Service iteration started. ServiceName={ServiceName}",
+                    serviceName);
+
                 await ExecuteIterationAsync(stoppingToken);
+
+                _logger.LogInformation(
+                    "Service iteration completed. ServiceName={ServiceName}",
+                    serviceName);
             }
             catch (Exception exception)
             {
@@ -36,7 +44,14 @@ internal abstract class PeriodicBackgroundService : BackgroundService
                     serviceName);
             }
 
-            await Task.Delay(_interval, stoppingToken);
+            try
+            {
+                await Task.Delay(_interval, stoppingToken);
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
         }
 
         _logger.LogInformation(
