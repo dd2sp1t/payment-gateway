@@ -78,7 +78,7 @@ public class SubmitConcurrencyTests : IntegrationTestBase
 
         await AssertHelper.AssertCallbackAcceptedAsync(callbackResponse);
 
-        await AssertHelper.AssertStatusIsStable(
+        await AssertHelper.AssertOperationStatusAsync(
             Client,
             operationId,
             expectedStatus: "COMPLETED");

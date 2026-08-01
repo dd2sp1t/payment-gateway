@@ -7,7 +7,6 @@ namespace PaymentGateway.IntegrationTests.Helpers;
 
 internal static class AssertHelper
 {
-    private static readonly TimeSpan InitialDelay = TimeSpan.FromSeconds(2);
     private static readonly TimeSpan StabilityDelay = TimeSpan.FromSeconds(6);
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -116,13 +115,11 @@ internal static class AssertHelper
             .BeEmpty();
     }
 
-    public static async Task AssertStatusIsStable(
+    public static async Task AssertOperationStatusAsync(
         HttpClient client,
         string operationId,
         string expectedStatus)
     {
-        await Task.Delay(InitialDelay);
-
         var operation = await client.GetOperationAsync(operationId);
 
         operation
@@ -130,16 +127,18 @@ internal static class AssertHelper
             .GetString()
             .Should()
             .Be(expectedStatus);
+    }
+
+    public static async Task AssertOperationStatusIsStableAsync(
+        HttpClient client,
+        string operationId,
+        string expectedStatus)
+    {
+        await AssertOperationStatusAsync(client, operationId, expectedStatus);
 
         await Task.Delay(StabilityDelay);
 
-        operation = await client.GetOperationAsync(operationId);
-
-        operation
-            .GetProperty("status")
-            .GetString()
-            .Should()
-            .Be(expectedStatus);
+        await AssertOperationStatusAsync(client, operationId, expectedStatus);
     }
 
     public static Task AssertEventSequenceAsync(IReadOnlyCollection<JsonElement> events, params string[] expected)
@@ -162,8 +161,6 @@ internal static class AssertHelper
 
     public static async Task AssertOperationHasSingleTerminalEventAndIgnoredAsync(HttpClient client, string operationId)
     {
-        await Task.Delay(InitialDelay);
-
         var operation = await client.GetOperationAsync(operationId);
 
         var status = operation

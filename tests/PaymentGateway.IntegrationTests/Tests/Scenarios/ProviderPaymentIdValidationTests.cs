@@ -53,7 +53,7 @@ public sealed class ProviderPaymentIdValidationTests : IntegrationTestBase
         await AssertHelper.AssertSubmitScheduledAsync(submitResponse);
 
         // assert
-        await AssertHelper.AssertStatusIsStable(
+        await AssertHelper.AssertOperationStatusIsStableAsync(
             Client,
             operationId,
             expectedStatus: "COMPLETED");

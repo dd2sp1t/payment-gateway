@@ -58,7 +58,7 @@ public class CallbackIdempotencyTests : IntegrationTestBase
             await AssertHelper.AssertCallbackAcceptedAsync(response);
         }
 
-        await AssertHelper.AssertStatusIsStable(
+        await AssertHelper.AssertOperationStatusAsync(
             Client,
             operationId,
             expectedStatus: "COMPLETED");
@@ -121,7 +121,7 @@ public class CallbackIdempotencyTests : IntegrationTestBase
             await AssertHelper.AssertCallbackAcceptedAsync(response);
         }
 
-        await AssertHelper.AssertStatusIsStable(
+        await AssertHelper.AssertOperationStatusAsync(
             Client,
             operationId,
             expectedStatus: "REJECTED");

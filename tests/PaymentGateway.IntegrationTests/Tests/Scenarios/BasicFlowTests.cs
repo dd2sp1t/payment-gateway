@@ -44,9 +44,8 @@ public class BasicFlowTests : IntegrationTestBase
 
         await AssertHelper.AssertCallbackAcceptedAsync(callbackResponse);
 
-
         // assert
-        await AssertHelper.AssertStatusIsStable(
+        await AssertHelper.AssertOperationStatusAsync(
             Client,
             operationId,
             expectedStatus: "COMPLETED");
@@ -96,7 +95,7 @@ public class BasicFlowTests : IntegrationTestBase
         await AssertHelper.AssertCallbackAcceptedAsync(callbackResponse);
 
         // assert
-        await AssertHelper.AssertStatusIsStable(
+        await AssertHelper.AssertOperationStatusAsync(
             Client,
             operationId,
             expectedStatus: "REJECTED");
