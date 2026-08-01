@@ -56,7 +56,7 @@ public class EarlyCallbackTests : IntegrationTestBase
 
         var events = await Client.GetEventsAsync(operationId);
 
-        AssertHelper.AssertEventSequence(
+        await AssertHelper.AssertEventSequenceAsync(
             events,
             "CREATED",
             "SUBMITTED",
@@ -111,7 +111,7 @@ public class EarlyCallbackTests : IntegrationTestBase
 
         var events = await Client.GetEventsAsync(operationId);
 
-        AssertHelper.AssertEventSequence(
+        await AssertHelper.AssertEventSequenceAsync(
             events,
             "CREATED",
             "SUBMITTED",

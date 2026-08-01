@@ -28,17 +28,10 @@ internal sealed class PersistenceExceptionMapper
     {
         return exception.ConstraintName switch
         {
-            var name when name == ConstraintNames.OperationsPrimaryKey =>
-                new DuplicateResourceException(nameof(Operation), nameof(Operation.OperationId)),
-
-            var name when name == ConstraintNames.OperationsProviderPaymentIdUnique =>
-                new DuplicateResourceException(nameof(Operation), nameof(Operation.ProviderPaymentId)),
-
             var name when name == ConstraintNames.OperationEventsPrimaryKey =>
-                new DuplicateResourceException(
-                    nameof(OperationEvent),
-                    nameof(OperationEvent.OperationId),
-                    nameof(OperationEvent.EventId)),
+                new ConcurrencyException(
+                    "Database concurrency conflict.",
+                    exception),
 
             var name when name == ConstraintNames.ReceiptsPrimaryKey =>
                 new DuplicateResourceException(
@@ -51,6 +44,16 @@ internal sealed class PersistenceExceptionMapper
                     nameof(Receipt.OperationId),
                     nameof(Receipt.ProviderPaymentId),
                     nameof(Receipt.Result)),
+
+            var name when name == ConstraintNames.OperationsPrimaryKey =>
+                new DuplicateResourceException(
+                    nameof(Operation),
+                    nameof(Operation.OperationId)),
+
+            var name when name == ConstraintNames.OperationsProviderPaymentIdUnique =>
+                new DuplicateResourceException(
+                    nameof(Operation),
+                    nameof(Operation.ProviderPaymentId)),
 
             _ => new PersistenceException("Unique constraint violation.", exception)
         };

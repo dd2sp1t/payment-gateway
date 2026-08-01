@@ -17,7 +17,10 @@ namespace PaymentGateway.IntegrationTests.PaymentProvider
             _httpClient = httpClient;
         }
 
-        public async Task<HttpResponseMessage?> DispatchAsync(string operationId, Guid providerPaymentId, Callback callback)
+        public async Task<HttpResponseMessage> DispatchAsync(
+            string operationId,
+            Guid providerPaymentId,
+            Callback callback)
         {
             try
             {
@@ -78,7 +81,7 @@ namespace PaymentGateway.IntegrationTests.PaymentProvider
                     operationId,
                     providerPaymentId);
 
-                return null;
+                throw;
             }
         }
     }

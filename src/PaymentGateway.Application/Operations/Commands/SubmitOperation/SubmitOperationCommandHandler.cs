@@ -62,29 +62,20 @@ internal sealed class SubmitOperationCommandHandler : IRequestHandler<SubmitOper
             return (operation, NewlyScheduled: false);
         }
 
-        try
-        {
-            operation.Submit();
+        operation.Submit();
 
-            await _operationRepository.UpdateAsync(operation, cancellationToken);
+        await _operationRepository.UpdateAsync(operation, cancellationToken);
 
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            _metrics.OperationSubmitted();
+        _metrics.OperationSubmitted();
 
-            _logger.LogInformation(
-                "Operation submitted. OperationId={OperationId}",
-                operation.OperationId);
+        _logger.LogInformation(
+            "Operation submitted. OperationId={OperationId}",
+            operation.OperationId);
 
-            operation.ClearUncommittedEvents();
+        operation.ClearUncommittedEvents();
 
-            return (operation, NewlyScheduled: true);
-        }
-        catch (DuplicateResourceException exception)
-        {
-            throw new ConcurrencyException(
-                "Optimistic concurrency conflict while submitting operation.",
-                exception);
-        }
+        return (operation, NewlyScheduled: true);
     }
 }

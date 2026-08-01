@@ -103,12 +103,8 @@ internal static class AssertHelper
             .NotBeNullOrWhiteSpace();
     }
 
-    public static async Task AssertCallbackAcceptedAsync(HttpResponseMessage? response)
+    public static async Task AssertCallbackAcceptedAsync(HttpResponseMessage response)
     {
-        response
-            .Should()
-            .NotBeNull();
-
         response.StatusCode
             .Should()
             .Be(HttpStatusCode.NoContent);
@@ -146,7 +142,7 @@ internal static class AssertHelper
             .Be(expectedStatus);
     }
 
-    public static void AssertEventSequence(IReadOnlyCollection<JsonElement> events, params string[] expected)
+    public static Task AssertEventSequenceAsync(IReadOnlyCollection<JsonElement> events, params string[] expected)
     {
         events
             .Should()
@@ -160,6 +156,8 @@ internal static class AssertHelper
             .Select(e => e.GetProperty("type").GetString())
             .Should()
             .ContainInOrder(expected);
+
+        return Task.CompletedTask;
     }
 
     public static async Task AssertOperationHasSingleTerminalEventAndIgnoredAsync(HttpClient client, string operationId)
@@ -230,5 +228,14 @@ internal static class AssertHelper
             "COMPLETED",
             "REJECTED"
             ]);
+    }
+
+    public static Task AssertConflictAsync(HttpResponseMessage response)
+    {
+        response.StatusCode
+            .Should()
+            .Be(HttpStatusCode.Conflict);
+
+        return Task.CompletedTask;
     }
 }

@@ -1,13 +1,11 @@
-using System.Net;
-using FluentAssertions;
 using PaymentGateway.Domain.Operations;
 using PaymentGateway.IntegrationTests.Helpers;
 
 namespace PaymentGateway.IntegrationTests.Tests.Scenarios;
 
-public sealed class ProviderPaymentIdMismatchTests : IntegrationTestBase
+public sealed class ProviderPaymentIdValidationTests : IntegrationTestBase
 {
-    public ProviderPaymentIdMismatchTests(TestDatabaseFixture fixture) : base(fixture)
+    public ProviderPaymentIdValidationTests(TestDatabaseFixture fixture) : base(fixture)
     {
     }
 
@@ -62,7 +60,7 @@ public sealed class ProviderPaymentIdMismatchTests : IntegrationTestBase
 
         var events = await Client.GetEventsAsync(operationId);
 
-        AssertHelper.AssertEventSequence(
+        await AssertHelper.AssertEventSequenceAsync(
             events,
             "CREATED",
             "SUBMITTED",
@@ -111,19 +109,12 @@ public sealed class ProviderPaymentIdMismatchTests : IntegrationTestBase
         var secondCallbackResponse = await ScenarioStore.DispatchNextCallbackAsync(operationId);
 
         // assert
-        firstCallbackResponse
-            .Should()
-            .NotBeNull();
-
-        firstCallbackResponse.StatusCode
-            .Should()
-            .Be(HttpStatusCode.Conflict);
-
+        await AssertHelper.AssertConflictAsync(firstCallbackResponse);
         await AssertHelper.AssertCallbackAcceptedAsync(secondCallbackResponse);
 
         var events = await Client.GetEventsAsync(operationId);
 
-        AssertHelper.AssertEventSequence(
+        await AssertHelper.AssertEventSequenceAsync(
             events,
             "CREATED",
             "SUBMITTED",

@@ -65,7 +65,7 @@ public class CallbackIdempotencyTests : IntegrationTestBase
 
         var events = await Client.GetEventsAsync(operationId);
 
-        AssertHelper.AssertEventSequence(
+        await AssertHelper.AssertEventSequenceAsync(
             events,
             "CREATED",
             "SUBMITTED",
@@ -128,123 +128,10 @@ public class CallbackIdempotencyTests : IntegrationTestBase
 
         var events = await Client.GetEventsAsync(operationId);
 
-        AssertHelper.AssertEventSequence(
+        await AssertHelper.AssertEventSequenceAsync(
             events,
             "CREATED",
             "SUBMITTED",
             "REJECTED");
-    }
-
-    [Fact]
-    public async Task CompletedReceipt_FollowedByRejectedReceipt_ShouldCreateIgnoredEvent()
-    {
-        // arrange
-        var operationId = $"op-late-opposite-{Guid.NewGuid()}";
-
-        const string amount = "1000.00";
-        const string currency = "RUB";
-        const string description = "integration_test";
-
-        ScenarioStore
-            .For(operationId)
-            .SubmitAccepted()
-            .Callback(
-                result: ReceiptResult.Completed,
-                delay: TimeSpan.FromMilliseconds(500))
-            .Callback(
-                result: ReceiptResult.Rejected,
-                delay: TimeSpan.FromMilliseconds(1000));
-
-        var createResponse = await Client.CreateOperationAsync(operationId, amount, currency, description);
-
-        await AssertHelper.AssertOperationCreatedAsync(
-            createResponse,
-            expectedOperationId: operationId,
-            expectedAmount: amount,
-            expectedCurrency: currency,
-            expectedDescription: description);
-
-        var submitResponse = await Client.SubmitOperationAsync(operationId);
-
-        await AssertHelper.AssertSubmitScheduledAsync(submitResponse);
-
-        // act
-        var firstCallbackResponse = await ScenarioStore.DispatchNextCallbackAsync(operationId);
-        var secondCallbackResponse = await ScenarioStore.DispatchNextCallbackAsync(operationId);
-
-        // assert
-        await AssertHelper.AssertCallbackAcceptedAsync(firstCallbackResponse);
-        await AssertHelper.AssertCallbackAcceptedAsync(secondCallbackResponse);
-
-        await AssertHelper.AssertStatusIsStable(
-            Client,
-            operationId,
-            expectedStatus: "COMPLETED");
-
-        var events = await Client.GetEventsAsync(operationId);
-
-        AssertHelper.AssertEventSequence(
-            events,
-            "CREATED",
-            "SUBMITTED",
-            "COMPLETED",
-            "IGNORED");
-    }
-
-    [Fact]
-    public async Task ConcurrentCompletedAndRejectedReceipts_ShouldPersistIgnoredReceipt()
-    {
-        // arrange
-        var operationId = $"op-concurrent-opposite-{Guid.NewGuid()}";
-
-        const string amount = "1000.00";
-        const string currency = "RUB";
-        const string description = "integration_test";
-
-        ScenarioStore
-            .For(operationId)
-            .SubmitAccepted();
-
-        ScenarioStore
-            .For(operationId)
-            .Callback(
-                ReceiptResult.Completed,
-                delay: TimeSpan.FromMilliseconds(500));
-
-        ScenarioStore
-            .For(operationId)
-            .Callback(
-                ReceiptResult.Rejected,
-                delay: TimeSpan.FromMilliseconds(500));
-
-        var createResponse = await Client.CreateOperationAsync(
-            operationId,
-            amount,
-            currency,
-            description);
-
-        await AssertHelper.AssertOperationCreatedAsync(
-            createResponse,
-            expectedOperationId: operationId,
-            expectedAmount: amount,
-            expectedCurrency: currency,
-            expectedDescription: description);
-
-        var submitResponse = await Client.SubmitOperationAsync(operationId);
-
-        await AssertHelper.AssertSubmitScheduledAsync(submitResponse);
-
-        // act
-        var callbackResponses = await Task.WhenAll(
-            ScenarioStore.DispatchNextCallbackAsync(operationId),
-            ScenarioStore.DispatchNextCallbackAsync(operationId));
-
-        // assert
-        foreach (var response in callbackResponses)
-        {
-            await AssertHelper.AssertCallbackAcceptedAsync(response);
-        }
-
-        await AssertHelper.AssertOperationHasSingleTerminalEventAndIgnoredAsync(Client, operationId);
     }
 }

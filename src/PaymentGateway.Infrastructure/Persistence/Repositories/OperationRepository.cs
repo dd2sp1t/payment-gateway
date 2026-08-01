@@ -53,8 +53,8 @@ internal sealed class OperationRepository : IOperationRepository
 
         _operationMapper.Apply(operation, dbOperation);
 
-        AddReceipts(operation, dbOperation);
         AddEvents(operation, dbOperation);
+        AddReceipts(operation, dbOperation);
     }
 
     private void AddEvents(Operation operation, DbOperation dbOperation)

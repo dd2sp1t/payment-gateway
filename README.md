@@ -85,7 +85,7 @@ Grafana credentials:
 
 # Интеграционные тесты
 
-Проект содержит набор интеграционных тестов, покрывающих основные сценарии работы.
+Проект содержит интеграционные тесты, покрывающие основные сценарии работы платежного шлюза.
 
 ## Запуск всех тестов
 
@@ -95,50 +95,82 @@ dotnet test
 
 ## Запуск отдельных сценариев
 
-### Базовый жизненный цикл операции
+### BasicFlowTests
 
-- операция успешно завершается после подтверждения провайдера и callback со статусом `COMPLETED`;
-- операция отклоняется после подтверждения провайдера и callback со статусом `REJECTED`.
+Проверяет базовый жизненный цикл операции:
+
+- успешное завершение операции (`COMPLETED`);
+- отклонение операции (`REJECTED`).
 
 ```bash
 dotnet test --filter BasicFlowTests
 ```
 
-### Идемпотентность обработки callback'ов
+### DuplicateOperationTests
 
-- повторный callback со статусом `COMPLETED` игнорируется;
-- повторный callback со статусом `REJECTED` игнорируется;
-- после `COMPLETED` приходит `REJECTED` — создается событие `IGNORED`;
-- конкурентные callback `COMPLETED` и `REJECTED` корректно обрабатываются, проигравший создает событие `IGNORED`.
+Проверяет создание операций:
+
+- повторное создание операции с тем же `OperationId` возвращает `409 Conflict`.
+
+```bash
+dotnet test --filter DuplicateOperationTests
+```
+
+### SubmitConcurrencyTests
+
+Проверяет конкурентную отправку операции:
+
+- при нескольких одновременных submit ровно один запрос создаёт намерение на отправку (`202 Accepted`);
+- остальные запросы возвращают уже сохранённое состояние (`200 OK`).
+
+```bash
+dotnet test --filter SubmitConcurrencyTests
+```
+
+### CallbackIdempotencyTests
+
+Проверяет идемпотентность обработки callback'ов:
+
+- повторный callback `COMPLETED` игнорируется;
+- повторный callback `REJECTED` игнорируется;
 
 ```bash
 dotnet test --filter CallbackIdempotencyTests
 ```
 
-### Callback раньше ответа провайдера
+### ConflictingCallbacksTests
 
-- callback `COMPLETED` приходит раньше HTTP-ответа провайдера, терминальный статус сохраняется;
-- callback `REJECTED` приходит раньше HTTP-ответа провайдера, терминальный статус сохраняется.
+Проверяет обработку конфликтующих callback'ов:
+
+- один результат становится терминальным;
+- противоположный сохраняется как `IGNORED`.
+
+```bash
+dotnet test --filter ConflictingCallbacksTests
+```
+
+### EarlyCallbackTests
+
+Проверяет получение callback раньше ответа провайдера:
+
+- callback `COMPLETED` приходит раньше HTTP-ответа провайдера;
+- callback `REJECTED` приходит раньше HTTP-ответа провайдера.
+
+Во всех случаях операция остается в соответствующем терминальном статусе и не возвращается в `PROCESSING`.
 
 ```bash
 dotnet test --filter EarlyCallbackTests
 ```
 
-### Несовпадающий ProviderPaymentId
+### ProviderPaymentIdValidationTests
 
-- callback с другим `ProviderPaymentId` отклоняется с ошибкой `409 Conflict`;
-- submit с другим `ProviderPaymentId` после callback безопасно завершается.
+Проверяет валидацию `ProviderPaymentId`:
 
-```bash
-dotnet test --filter ProviderPaymentIdMismatchTests
-```
-
-### Конкурентный submit одной операции
-
-- несколько одновременных submit-запросов приводят только к одной отправке операции провайдеру.
+- callback с несовпадающим `ProviderPaymentId` отклоняется (`409 Conflict`);
+- ответ провайдера с несовпадающим `ProviderPaymentId` безопасно игнорируется, если операция уже завершена callback'ом.
 
 ```bash
-dotnet test --filter SubmitConcurrencyTests
+dotnet test --filter ProviderPaymentIdValidationTests
 ```
 
 ---

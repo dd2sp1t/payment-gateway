@@ -85,7 +85,7 @@ public class SubmitConcurrencyTests : IntegrationTestBase
 
         var events = await Client.GetEventsAsync(operationId);
 
-        AssertHelper.AssertEventSequence(
+        await AssertHelper.AssertEventSequenceAsync(
             events,
             "CREATED",
             "SUBMITTED",

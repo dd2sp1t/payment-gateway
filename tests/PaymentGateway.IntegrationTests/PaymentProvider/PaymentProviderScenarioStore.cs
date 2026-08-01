@@ -89,7 +89,7 @@ public sealed class PaymentProviderScenarioStore
         return id;
     }
 
-    public async Task<HttpResponseMessage?> DispatchNextCallbackAsync(string operationId)
+    public async Task<HttpResponseMessage> DispatchNextCallbackAsync(string operationId)
     {
         var builder = GetBuilder(operationId);
 
@@ -97,7 +97,11 @@ public sealed class PaymentProviderScenarioStore
 
         if (callback is null)
         {
-            return null;
+            _logger.LogError(
+                "No callback configured. OperationId={OperationId}",
+                operationId);
+
+            throw new InvalidOperationException();
         }
 
         var id = callback.ProviderPaymentId ?? GetProviderPaymentId(operationId);
