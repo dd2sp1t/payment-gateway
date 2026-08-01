@@ -127,6 +127,34 @@ dotnet test --filter DuplicateOperationTests
 dotnet test --filter SubmitConcurrencyTests
 ```
 
+### DispatchRetryTests
+
+Проверяет повторную отправку операции при временных ошибках провайдера.
+
+Покрываются следующие временные ошибки:
+
+- `503 Service Unavailable`;
+- `504 Gateway Timeout`;
+- `429 Too Many Requests`;
+- `TimeoutException`;
+- `SocketException`;
+- `IOException`.
+
+Проверяется, что:
+
+- после временной ошибки операция остаётся в статусе `PROCESSING`;
+- увеличивается счётчик попыток (`RetryCount`);
+- планируется следующая отправка (`NextDispatchAt`);
+- после успешной повторной отправки операция корректно завершается.
+
+Отдельно проверяется, что:
+
+- после достижения максимального количества попыток повторные отправки больше не планируются (`NextDispatchAt = null`).
+
+```bash
+dotnet test --filter DispatchRetryTests
+```
+
 ### CallbackIdempotencyTests
 
 Проверяет идемпотентность обработки callback'ов:

@@ -1,5 +1,3 @@
-using PaymentGateway.IntegrationTests.Helpers;
-
 namespace PaymentGateway.IntegrationTests.Tests.Scenarios;
 
 public class DuplicateOperationTests : IntegrationTestBase
@@ -25,7 +23,7 @@ public class DuplicateOperationTests : IntegrationTestBase
             currency,
             description);
 
-        await AssertHelper.AssertOperationCreatedAsync(
+        await Assert.AssertOperationCreatedAsync(
             firstResponse,
             expectedOperationId: operationId,
             expectedAmount: amount,
@@ -39,6 +37,6 @@ public class DuplicateOperationTests : IntegrationTestBase
             description);
 
         // assert
-        await AssertHelper.AssertConflictAsync(duplicateResponse);
+        await Assert.AssertConflictAsync(duplicateResponse);
     }
 }

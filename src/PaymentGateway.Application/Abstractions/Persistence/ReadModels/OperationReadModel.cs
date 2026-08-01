@@ -8,4 +8,6 @@ public sealed record OperationReadModel(
     string Currency,
     string Description,
     OperationStatus Status,
-    Guid? ProviderPaymentId);
+    Guid? ProviderPaymentId,
+    int RetryCount,
+    DateTimeOffset? NextDispatchAt);

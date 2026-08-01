@@ -56,7 +56,9 @@ internal sealed class OperationReadRepository : IOperationReadRepository
                 x.Currency,
                 x.Description,
                 x.Status,
-                x.ProviderPaymentId))
+                x.ProviderPaymentId,
+                x.RetryCount,
+                x.NextDispatchAt))
             .SingleOrDefaultAsync(cancellationToken);
     }
 

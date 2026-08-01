@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
-using PaymentGateway.Application.BackgroundServices.DispatchOperations;
 using PaymentGateway.Infrastructure.Persistence;
 using PaymentGateway.IntegrationTests.Extensions;
 using Testcontainers.PostgreSql;
@@ -24,13 +23,6 @@ public sealed class TestDatabaseFixture : IAsyncLifetime
 
         var connectionString = _dbContainer.GetConnectionString();
 
-        var dispatchOptions = new DispatchOperationsBackgroundServiceOptions
-        {
-            Interval = TimeSpan.FromMilliseconds(500),
-            BatchSize = 100,
-            MaxParallelDispatches = 10
-        };
-
         Factory = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
                 {
@@ -38,7 +30,8 @@ public sealed class TestDatabaseFixture : IAsyncLifetime
                     {
                         services
                             .ReplaceDbContext<PaymentGatewayDbContext>(connectionString)
-                            .ReplaceOptions(dispatchOptions)
+                            .ReplaceDispatchOperationsBackgroundServiceOptions()
+                            .ReplaceDispatchOptions()
                             .ReplacePaymentProviderClient(Factory);
                     });
                 });

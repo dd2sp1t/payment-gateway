@@ -57,6 +57,8 @@ internal sealed class CreateOperationCommandHandler : IRequestHandler<CreateOper
             operation.Currency,
             operation.Description,
             operation.Status,
-            operation.ProviderPaymentId);
+            operation.ProviderPaymentId,
+            operation.RetryCount,
+            operation.NextDispatchAt);
     }
 }

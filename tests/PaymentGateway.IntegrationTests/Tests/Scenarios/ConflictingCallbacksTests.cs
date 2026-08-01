@@ -1,5 +1,4 @@
 using PaymentGateway.Domain.Operations;
-using PaymentGateway.IntegrationTests.Helpers;
 
 namespace PaymentGateway.IntegrationTests.Tests.Scenarios;
 
@@ -41,7 +40,7 @@ public class ConflictingCallbacksTests : IntegrationTestBase
             currency,
             description);
 
-        await AssertHelper.AssertOperationCreatedAsync(
+        await Assert.AssertOperationCreatedAsync(
             createResponse,
             expectedOperationId: operationId,
             expectedAmount: amount,
@@ -50,7 +49,7 @@ public class ConflictingCallbacksTests : IntegrationTestBase
 
         var submitResponse = await Client.SubmitOperationAsync(operationId);
 
-        await AssertHelper.AssertSubmitScheduledAsync(submitResponse);
+        await Assert.AssertSubmitScheduledAsync(submitResponse);
 
         // act
         var callbackResponses = await Task.WhenAll(
@@ -60,9 +59,9 @@ public class ConflictingCallbacksTests : IntegrationTestBase
         // assert
         foreach (var response in callbackResponses)
         {
-            await AssertHelper.AssertCallbackAcceptedAsync(response);
+            await Assert.AssertCallbackAcceptedAsync(response);
         }
 
-        await AssertHelper.AssertOperationHasSingleTerminalEventAndIgnoredAsync(Client, operationId);
+        await Assert.AssertOperationHasSingleTerminalEventAndIgnoredAsync(Client, operationId);
     }
 }

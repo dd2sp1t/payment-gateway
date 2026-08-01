@@ -9,7 +9,7 @@ using PaymentGateway.IntegrationTests.PaymentProvider;
 
 namespace PaymentGateway.IntegrationTests.Extensions;
 
-public static class ServiceCollectionExtensions
+internal static class ServiceCollectionExtensions
 {
     public static IServiceCollection ReplaceDbContext<TDbContext>(
         this IServiceCollection services,
@@ -33,16 +33,16 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection ReplaceOptions<TOptions>(this IServiceCollection services, TOptions options)
-        where TOptions : class, new()
+    public static IServiceCollection ReplaceDispatchOperationsBackgroundServiceOptions(
+        this IServiceCollection services)
     {
-        services.RemoveAll<IConfigureOptions<TOptions>>();
-        services.RemoveAll<IPostConfigureOptions<TOptions>>();
-        services.RemoveAll<IOptions<TOptions>>();
+        return ReplaceOptions(services, TestOptions.Background);
+    }
 
-        services.AddSingleton(Options.Create(options));
-
-        return services;
+    public static IServiceCollection ReplaceDispatchOptions(
+        this IServiceCollection services)
+    {
+        return ReplaceOptions(services, TestOptions.Dispatch);
     }
 
     public static IServiceCollection ReplacePaymentProviderClient(
@@ -62,6 +62,18 @@ public static class ServiceCollectionExtensions
 
         services.RemoveAll<IPaymentProviderClient>();
         services.AddScoped<IPaymentProviderClient, PaymentProviderScenarioClient>();
+
+        return services;
+    }
+
+    private static IServiceCollection ReplaceOptions<TOptions>(this IServiceCollection services, TOptions options)
+        where TOptions : class, new()
+    {
+        services.RemoveAll<IConfigureOptions<TOptions>>();
+        services.RemoveAll<IPostConfigureOptions<TOptions>>();
+        services.RemoveAll<IOptions<TOptions>>();
+
+        services.AddSingleton(Options.Create(options));
 
         return services;
     }

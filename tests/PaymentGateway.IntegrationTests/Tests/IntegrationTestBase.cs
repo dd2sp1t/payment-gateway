@@ -1,4 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using PaymentGateway.Application.BackgroundServices.DispatchOperations;
+using PaymentGateway.IntegrationTests.Helpers;
 using PaymentGateway.IntegrationTests.PaymentProvider;
 
 namespace PaymentGateway.IntegrationTests.Tests;
@@ -7,8 +10,8 @@ namespace PaymentGateway.IntegrationTests.Tests;
 public abstract class IntegrationTestBase : IDisposable
 {
     protected HttpClient Client { get; }
-
     protected IServiceScope Scope { get; }
+    protected AssertHelper Assert { get; }
 
     protected internal PaymentProviderScenarioStore ScenarioStore { get; }
 
@@ -18,9 +21,12 @@ public abstract class IntegrationTestBase : IDisposable
 
         Scope = fixture.Factory.Services.CreateScope();
 
-        ScenarioStore = Scope.ServiceProvider.GetRequiredService<PaymentProviderScenarioStore>();
-
+        ScenarioStore = fixture.Factory.Services.GetRequiredService<PaymentProviderScenarioStore>();
         ScenarioStore.Clear();
+
+        Assert = new AssertHelper(
+            TestOptions.Background,
+            TestOptions.StabilityDelay);
     }
 
     public virtual void Dispose()

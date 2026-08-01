@@ -1,5 +1,4 @@
 using PaymentGateway.Domain.Operations;
-using PaymentGateway.IntegrationTests.Helpers;
 
 namespace PaymentGateway.IntegrationTests.Tests.Scenarios;
 
@@ -29,7 +28,7 @@ public class BasicFlowTests : IntegrationTestBase
         // act
         var createResponse = await Client.CreateOperationAsync(operationId, amount, currency, description);
 
-        await AssertHelper.AssertOperationCreatedAsync(
+        await Assert.AssertOperationCreatedAsync(
             createResponse,
             expectedOperationId: operationId,
             expectedAmount: amount,
@@ -38,21 +37,21 @@ public class BasicFlowTests : IntegrationTestBase
 
         var submitResponse = await Client.SubmitOperationAsync(operationId);
 
-        await AssertHelper.AssertSubmitScheduledAsync(submitResponse);
+        await Assert.AssertSubmitScheduledAsync(submitResponse);
 
         var callbackResponse = await ScenarioStore.DispatchNextCallbackAsync(operationId);
 
-        await AssertHelper.AssertCallbackAcceptedAsync(callbackResponse);
+        await Assert.AssertCallbackAcceptedAsync(callbackResponse);
 
         // assert
-        await AssertHelper.AssertOperationStatusAsync(
+        await Assert.AssertOperationStatusAsync(
             Client,
             operationId,
             expectedStatus: "COMPLETED");
 
         var events = await Client.GetEventsAsync(operationId);
 
-        await AssertHelper.AssertEventSequenceAsync(
+        await Assert.AssertEventSequenceAsync(
             events,
             "CREATED",
             "SUBMITTED",
@@ -79,7 +78,7 @@ public class BasicFlowTests : IntegrationTestBase
         // act
         var createResponse = await Client.CreateOperationAsync(operationId, amount, currency, description);
 
-        await AssertHelper.AssertOperationCreatedAsync(
+        await Assert.AssertOperationCreatedAsync(
             createResponse,
             expectedOperationId: operationId,
             expectedAmount: amount,
@@ -88,21 +87,21 @@ public class BasicFlowTests : IntegrationTestBase
 
         var submitResponse = await Client.SubmitOperationAsync(operationId);
 
-        await AssertHelper.AssertSubmitScheduledAsync(submitResponse);
+        await Assert.AssertSubmitScheduledAsync(submitResponse);
 
         var callbackResponse = await ScenarioStore.DispatchNextCallbackAsync(operationId);
 
-        await AssertHelper.AssertCallbackAcceptedAsync(callbackResponse);
+        await Assert.AssertCallbackAcceptedAsync(callbackResponse);
 
         // assert
-        await AssertHelper.AssertOperationStatusAsync(
+        await Assert.AssertOperationStatusAsync(
             Client,
             operationId,
             expectedStatus: "REJECTED");
 
         var events = await Client.GetEventsAsync(operationId);
 
-        await AssertHelper.AssertEventSequenceAsync(
+        await Assert.AssertEventSequenceAsync(
             events,
             "CREATED",
             "SUBMITTED",

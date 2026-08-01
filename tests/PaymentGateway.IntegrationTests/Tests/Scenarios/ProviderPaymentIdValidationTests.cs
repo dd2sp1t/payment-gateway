@@ -1,5 +1,4 @@
 using PaymentGateway.Domain.Operations;
-using PaymentGateway.IntegrationTests.Helpers;
 
 namespace PaymentGateway.IntegrationTests.Tests.Scenarios;
 
@@ -34,7 +33,7 @@ public sealed class ProviderPaymentIdValidationTests : IntegrationTestBase
             currency,
             description);
 
-        await AssertHelper.AssertOperationCreatedAsync(
+        await Assert.AssertOperationCreatedAsync(
             createResponse,
             operationId,
             expectedAmount: amount,
@@ -46,21 +45,21 @@ public sealed class ProviderPaymentIdValidationTests : IntegrationTestBase
 
         var callbackResponse = await ScenarioStore.DispatchNextCallbackAsync(operationId);
 
-        await AssertHelper.AssertCallbackAcceptedAsync(callbackResponse);
+        await Assert.AssertCallbackAcceptedAsync(callbackResponse);
 
         var submitResponse = await submitTask;
 
-        await AssertHelper.AssertSubmitScheduledAsync(submitResponse);
+        await Assert.AssertSubmitScheduledAsync(submitResponse);
 
         // assert
-        await AssertHelper.AssertOperationStatusIsStableAsync(
+        await Assert.AssertOperationStatusIsStableAsync(
             Client,
             operationId,
             expectedStatus: "COMPLETED");
 
         var events = await Client.GetEventsAsync(operationId);
 
-        await AssertHelper.AssertEventSequenceAsync(
+        await Assert.AssertEventSequenceAsync(
             events,
             "CREATED",
             "SUBMITTED",
@@ -93,7 +92,7 @@ public sealed class ProviderPaymentIdValidationTests : IntegrationTestBase
             currency,
             description);
 
-        await AssertHelper.AssertOperationCreatedAsync(
+        await Assert.AssertOperationCreatedAsync(
             createResponse,
             operationId,
             expectedAmount: amount,
@@ -102,19 +101,19 @@ public sealed class ProviderPaymentIdValidationTests : IntegrationTestBase
 
         var submitResponse = await Client.SubmitOperationAsync(operationId);
 
-        await AssertHelper.AssertSubmitScheduledAsync(submitResponse);
+        await Assert.AssertSubmitScheduledAsync(submitResponse);
 
         // act
         var firstCallbackResponse = await ScenarioStore.DispatchNextCallbackAsync(operationId);
         var secondCallbackResponse = await ScenarioStore.DispatchNextCallbackAsync(operationId);
 
         // assert
-        await AssertHelper.AssertConflictAsync(firstCallbackResponse);
-        await AssertHelper.AssertCallbackAcceptedAsync(secondCallbackResponse);
+        await Assert.AssertConflictAsync(firstCallbackResponse);
+        await Assert.AssertCallbackAcceptedAsync(secondCallbackResponse);
 
         var events = await Client.GetEventsAsync(operationId);
 
-        await AssertHelper.AssertEventSequenceAsync(
+        await Assert.AssertEventSequenceAsync(
             events,
             "CREATED",
             "SUBMITTED",

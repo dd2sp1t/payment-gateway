@@ -8,4 +8,6 @@ public sealed record OperationResponse(
     string Currency,
     string Description,
     OperationStatus Status,
-    Guid? ProviderPaymentId);
+    Guid? ProviderPaymentId,
+    int RetryCount,
+    DateTimeOffset? NextDispatchAt);

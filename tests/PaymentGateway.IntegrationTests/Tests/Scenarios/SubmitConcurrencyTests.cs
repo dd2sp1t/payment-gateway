@@ -1,7 +1,6 @@
 using System.Net;
 using FluentAssertions;
 using PaymentGateway.Domain.Operations;
-using PaymentGateway.IntegrationTests.Helpers;
 
 namespace PaymentGateway.IntegrationTests.Tests.Scenarios;
 
@@ -38,7 +37,7 @@ public class SubmitConcurrencyTests : IntegrationTestBase
 
         var createResponse = await Client.CreateOperationAsync(operationId, amount, currency, description);
 
-        await AssertHelper.AssertOperationCreatedAsync(
+        await Assert.AssertOperationCreatedAsync(
             createResponse,
             expectedOperationId: operationId,
             expectedAmount: amount,
@@ -66,26 +65,26 @@ public class SubmitConcurrencyTests : IntegrationTestBase
         {
             if (response.StatusCode == HttpStatusCode.Accepted)
             {
-                await AssertHelper.AssertSubmitScheduledAsync(response);
+                await Assert.AssertSubmitScheduledAsync(response);
             }
             else
             {
-                await AssertHelper.AssertSubmitCurrentStateAsync(response);
+                await Assert.AssertSubmitCurrentStateAsync(response);
             }
         }
 
         var callbackResponse = await ScenarioStore.DispatchNextCallbackAsync(operationId);
 
-        await AssertHelper.AssertCallbackAcceptedAsync(callbackResponse);
+        await Assert.AssertCallbackAcceptedAsync(callbackResponse);
 
-        await AssertHelper.AssertOperationStatusAsync(
+        await Assert.AssertOperationStatusAsync(
             Client,
             operationId,
             expectedStatus: "COMPLETED");
 
         var events = await Client.GetEventsAsync(operationId);
 
-        await AssertHelper.AssertEventSequenceAsync(
+        await Assert.AssertEventSequenceAsync(
             events,
             "CREATED",
             "SUBMITTED",
