@@ -12,6 +12,7 @@ internal sealed class DbOperation : DbEntity
     public OperationStatus Status { get; set; }
     public int RetryCount { get; set; }
     public DateTimeOffset? NextDispatchAt { get; set; }
+    public bool CanDispatch { get; set; }
     public long LastEventId { get; set; }
     public uint Version { get; set; }
 

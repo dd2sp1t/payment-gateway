@@ -12,7 +12,7 @@ using PaymentGateway.Infrastructure.Persistence;
 namespace PaymentGateway.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(PaymentGatewayDbContext))]
-    [Migration("20260727092727_InitialCreate")]
+    [Migration("20260801212208_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -34,6 +34,9 @@ namespace PaymentGateway.Infrastructure.Persistence.Migrations
                     b.Property<decimal>("Amount")
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)");
+
+                    b.Property<bool>("CanDispatch")
+                        .HasColumnType("boolean");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");

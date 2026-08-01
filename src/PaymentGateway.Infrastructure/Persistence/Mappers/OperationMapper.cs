@@ -16,6 +16,7 @@ internal sealed class OperationMapper
             status: dbOperation.Status,
             retryCount: dbOperation.RetryCount,
             nextDispatchAt: dbOperation.NextDispatchAt,
+            canDispatch: dbOperation.CanDispatch,
             lastEventId: dbOperation.LastEventId);
     }
 
@@ -31,6 +32,7 @@ internal sealed class OperationMapper
             Status = operation.Status,
             RetryCount = operation.RetryCount,
             NextDispatchAt = operation.NextDispatchAt,
+            CanDispatch = operation.CanDispatch,
             LastEventId = operation.LastEventId
         };
     }
@@ -41,6 +43,7 @@ internal sealed class OperationMapper
         dbOperation.Status = operation.Status;
         dbOperation.RetryCount = operation.RetryCount;
         dbOperation.NextDispatchAt = operation.NextDispatchAt;
+        dbOperation.CanDispatch = operation.CanDispatch;
         dbOperation.LastEventId = operation.LastEventId;
     }
 }

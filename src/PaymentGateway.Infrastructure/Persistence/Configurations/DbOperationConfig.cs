@@ -66,6 +66,10 @@ internal sealed class DbOperationConfig : IEntityTypeConfiguration<DbOperation>
             .IsRequired(false);
 
         builder
+            .Property(x => x.CanDispatch)
+            .IsRequired();
+
+        builder
             .Property(x => x.LastEventId)
             .IsRequired();
 

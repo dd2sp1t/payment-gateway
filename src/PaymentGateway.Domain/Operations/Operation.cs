@@ -21,6 +21,7 @@ public sealed class Operation
     public OperationStatus Status { get; private set; }
     public int RetryCount { get; private set; }
     public DateTimeOffset? NextDispatchAt { get; private set; }
+    public bool CanDispatch { get; private set; }
     public long LastEventId { get; private set; }
     public IReadOnlyList<OperationEvent> UncommittedEvents => _uncommittedEvents;
     public IReadOnlyList<Receipt> UncommittedReceipts => _uncommittedReceipts;
@@ -38,6 +39,7 @@ public sealed class Operation
         OperationStatus status,
         int retryCount,
         DateTimeOffset? nextDispatchAt,
+        bool canDispatch,
         long lastEventId)
     {
         OperationId = operationId;
@@ -48,6 +50,7 @@ public sealed class Operation
         Status = status;
         RetryCount = retryCount;
         NextDispatchAt = nextDispatchAt;
+        CanDispatch = canDispatch;
         LastEventId = lastEventId;
     }
 
@@ -90,6 +93,7 @@ public sealed class Operation
             status: OperationStatus.Created,
             retryCount: 0,
             nextDispatchAt: null,
+            canDispatch: true,
             lastEventId: 0);
 
         operation.AddEvent(
@@ -110,7 +114,8 @@ public sealed class Operation
         OperationStatus status,
         int retryCount,
         DateTimeOffset? nextDispatchAt,
-        long lastEventId)
+        long lastEventId,
+        bool canDispatch)
     {
         return new Operation(
             operationId,
@@ -121,6 +126,7 @@ public sealed class Operation
             status,
             retryCount,
             nextDispatchAt,
+            canDispatch,
             lastEventId);
     }
 
@@ -238,6 +244,7 @@ public sealed class Operation
 
     private void ClearRetrySchedule()
     {
+        CanDispatch = false;
         NextDispatchAt = null;
     }
 

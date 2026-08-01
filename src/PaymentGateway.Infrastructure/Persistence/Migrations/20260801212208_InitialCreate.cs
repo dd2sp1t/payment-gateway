@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -22,6 +23,7 @@ namespace PaymentGateway.Infrastructure.Persistence.Migrations
                     Status = table.Column<string>(type: "character varying(16)", maxLength: 16, nullable: false),
                     RetryCount = table.Column<int>(type: "integer", nullable: false),
                     NextDispatchAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    CanDispatch = table.Column<bool>(type: "boolean", nullable: false),
                     LastEventId = table.Column<long>(type: "bigint", nullable: false),
                     xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),

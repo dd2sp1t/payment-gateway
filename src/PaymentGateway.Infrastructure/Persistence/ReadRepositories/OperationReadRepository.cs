@@ -23,6 +23,7 @@ internal sealed class OperationReadRepository : IOperationReadRepository
         return await _dbContext.Operations
             .AsNoTracking()
             .Where(x => x.Status == OperationStatus.Processing
+                    && x.CanDispatch
                     && (x.NextDispatchAt == null || x.NextDispatchAt <= now))
             .OrderBy(x => x.NextDispatchAt ?? x.UpdatedAt)
             .ThenBy(x => x.UpdatedAt)
