@@ -26,13 +26,13 @@ internal abstract class PeriodicBackgroundService : BackgroundService
         {
             try
             {
-                _logger.LogInformation(
+                _logger.LogDebug(
                     "Service iteration started. ServiceName={ServiceName}",
                     serviceName);
 
                 await ExecuteIterationAsync(stoppingToken);
 
-                _logger.LogInformation(
+                _logger.LogDebug(
                     "Service iteration completed. ServiceName={ServiceName}",
                     serviceName);
             }

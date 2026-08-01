@@ -90,7 +90,10 @@ Grafana credentials:
 ## Запуск всех тестов
 
 ```bash
-dotnet test
+dotnet build
+```
+```bash
+dotnet test --no-build
 ```
 
 ## Запуск отдельных сценариев
@@ -103,7 +106,7 @@ dotnet test
 - отклонение операции (`REJECTED`).
 
 ```bash
-dotnet test --filter BasicFlowTests
+dotnet test --no-build --filter BasicFlowTests
 ```
 
 ### DuplicateOperationTests
@@ -113,7 +116,7 @@ dotnet test --filter BasicFlowTests
 - повторное создание операции с тем же `OperationId` возвращает `409 Conflict`.
 
 ```bash
-dotnet test --filter DuplicateOperationTests
+dotnet test --no-build --filter DuplicateOperationTests
 ```
 
 ### SubmitConcurrencyTests
@@ -124,7 +127,7 @@ dotnet test --filter DuplicateOperationTests
 - остальные запросы возвращают уже сохранённое состояние (`200 OK`).
 
 ```bash
-dotnet test --filter SubmitConcurrencyTests
+dotnet test --no-build --filter SubmitConcurrencyTests
 ```
 
 ### DispatchRetryTests
@@ -152,7 +155,7 @@ dotnet test --filter SubmitConcurrencyTests
 - после достижения максимального количества попыток повторные отправки больше не планируются (`NextDispatchAt = null`).
 
 ```bash
-dotnet test --filter DispatchRetryTests
+dotnet test --no-build --filter DispatchRetryTests
 ```
 
 ### CallbackIdempotencyTests
@@ -163,7 +166,7 @@ dotnet test --filter DispatchRetryTests
 - повторный callback `REJECTED` игнорируется;
 
 ```bash
-dotnet test --filter CallbackIdempotencyTests
+dotnet test --no-build --filter CallbackIdempotencyTests
 ```
 
 ### ConflictingCallbacksTests
@@ -174,7 +177,7 @@ dotnet test --filter CallbackIdempotencyTests
 - противоположный сохраняется как `IGNORED`.
 
 ```bash
-dotnet test --filter ConflictingCallbacksTests
+dotnet test --no-build --filter ConflictingCallbacksTests
 ```
 
 ### EarlyCallbackTests
@@ -187,7 +190,7 @@ dotnet test --filter ConflictingCallbacksTests
 Во всех случаях операция остается в соответствующем терминальном статусе и не возвращается в `PROCESSING`.
 
 ```bash
-dotnet test --filter EarlyCallbackTests
+dotnet test --no-build --filter EarlyCallbackTests
 ```
 
 ### ProviderPaymentIdValidationTests
@@ -198,7 +201,7 @@ dotnet test --filter EarlyCallbackTests
 - ответ провайдера с несовпадающим `ProviderPaymentId` безопасно игнорируется, если операция уже завершена callback'ом.
 
 ```bash
-dotnet test --filter ProviderPaymentIdValidationTests
+dotnet test --no-build --filter ProviderPaymentIdValidationTests
 ```
 
 ---
