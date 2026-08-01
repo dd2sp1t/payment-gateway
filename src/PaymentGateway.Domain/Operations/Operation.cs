@@ -238,7 +238,7 @@ public sealed class Operation
 
     private void ClearRetrySchedule()
     {
-        NextDispatchAt = DateTimeOffset.MaxValue;
+        NextDispatchAt = null;
     }
 
     private void Complete(Receipt receipt)

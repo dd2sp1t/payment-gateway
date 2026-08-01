@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 namespace PaymentGateway.Api.Middleware;
 
 internal sealed class OperationIdLoggingMiddleware
@@ -15,27 +17,54 @@ internal sealed class OperationIdLoggingMiddleware
 
     public async Task Invoke(HttpContext context)
     {
+        if (context.Request.Path.StartsWithSegments("/metrics")
+            || context.Request.Path.StartsWithSegments("/health")
+            || context.Request.Path.StartsWithSegments("/swagger"))
+        {
+            await _next(context);
+            return;
+        }
+
         var operationId = context.Items.TryGetValue("OperationId", out var value)
             ? value?.ToString()
             : null;
-
         var state = new Dictionary<string, object?> { ["OperationId"] = operationId };
+
         using (_logger.BeginScope(state))
         {
-            await _next(context);
-
-            if (context.Request.Path.StartsWithSegments("/metrics")
-                || context.Request.Path.StartsWithSegments("/health")
-                || context.Request.Path.StartsWithSegments("/swagger"))
-            {
-                return;
-            }
+            var start = Stopwatch.GetTimestamp();
 
             _logger.LogInformation(
-                "Request completed. Method={Method} Path={Path} StatusCode={StatusCode}",
+                "HTTP request started. Method={Method} Path={Path}",
                 context.Request.Method,
-                context.Request.Path,
-                context.Response.StatusCode);
+                context.Request.Path);
+
+            try
+            {
+                await _next(context);
+
+                var elapsed = Stopwatch.GetElapsedTime(start);
+
+                _logger.LogInformation(
+                    "HTTP request completed. Method={Method} Path={Path} StatusCode={StatusCode} DurationMs={DurationMs}",
+                    context.Request.Method,
+                    context.Request.Path,
+                    context.Response.StatusCode,
+                    elapsed.TotalMilliseconds);
+            }
+            catch (Exception exception)
+            {
+                var elapsed = Stopwatch.GetElapsedTime(start);
+
+                _logger.LogError(
+                    exception,
+                    "HTTP request failed. Method={Method} Path={Path} DurationMs={DurationMs}",
+                    context.Request.Method,
+                    context.Request.Path,
+                    elapsed.TotalMilliseconds);
+
+                throw;
+            }
         }
     }
 }

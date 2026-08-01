@@ -36,7 +36,7 @@ internal sealed class SubmitOperationCommandHandler : IRequestHandler<SubmitOper
         if (operation is null)
         {
             _logger.LogWarning(
-                "Submit skipped. Operation not found. OperationId={OperationId}",
+                "Operation not found. Skipping. OperationId={OperationId}",
                 request.OperationId);
 
             throw new NotFoundException($"Operation '{request.OperationId}' was not found.");
@@ -55,7 +55,7 @@ internal sealed class SubmitOperationCommandHandler : IRequestHandler<SubmitOper
         if (operation.Status != OperationStatus.Created)
         {
             _logger.LogInformation(
-                "Submit skipped. OperationId={OperationId} Status={Status}",
+                "Operation status is invalid. Skipping. OperationId={OperationId} Status={Status}",
                 operation.OperationId,
                 operation.Status);
 

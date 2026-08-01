@@ -49,10 +49,11 @@ internal sealed class ProcessReceiptCommandHandler : IRequestHandler<ProcessRece
 
         if (isProcessed)
         {
-            _logger.LogDebug(
-                "Receipt ignored because it has already been processed. OperationId={OperationId} ProviderPaymentId={ProviderPaymentId}",
+            _logger.LogInformation(
+                "Receipt already processed. Skipping. OperationId={OperationId} ProviderPaymentId={ProviderPaymentId} Result={Result}",
                 request.OperationId,
-                request.ProviderPaymentId);
+                request.ProviderPaymentId,
+                request.Result);
 
             return;
         }
@@ -62,7 +63,7 @@ internal sealed class ProcessReceiptCommandHandler : IRequestHandler<ProcessRece
         if (operation is null)
         {
             _logger.LogWarning(
-                "Receipt cannot be processed because operation was not found. OperationId={OperationId}",
+                "Operation not found. OperationId={OperationId}",
                 request.OperationId);
 
             throw new NotFoundException($"Operation '{request.OperationId}' was not found.");

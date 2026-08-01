@@ -30,7 +30,7 @@ internal sealed class DispatchOperationsBackgroundService : PeriodicBackgroundSe
         _options = options.Value;
 
         _logger.LogInformation(
-            "Background service configured. ServiceName={ServiceName} Options={Options} HashCode={HashCode}",
+            "Service configured. ServiceName={ServiceName} Options={Options} HashCode={HashCode}",
             nameof(DispatchOperationsBackgroundService),
             JsonSerializer.Serialize(_options),
             GetHashCode());

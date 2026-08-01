@@ -50,7 +50,7 @@ internal sealed class DispatchOperationCommandHandler
         if (operation is null)
         {
             _logger.LogWarning(
-                "Operation not found. OperationId={OperationId}",
+                "Operation not found. Skipping. OperationId={OperationId}",
                 request.OperationId);
 
             return;
@@ -65,11 +65,11 @@ internal sealed class DispatchOperationCommandHandler
         if (operation.Status != OperationStatus.Processing)
         {
             _logger.LogInformation(
-                "Dispatch skipped. OperationId={OperationId} Status={Status} RetryCount={RetryCount} NextDispatchAt={NextDispatchAt}",
+                "Operation already processed. Skipping. OperationId={OperationId} ProviderPaymentId={ProviderPaymentId} Status={Status} RetryCount={RetryCount}",
                 operation.OperationId,
+                operation.ProviderPaymentId,
                 operation.Status,
-                operation.RetryCount,
-                operation.NextDispatchAt);
+                operation.RetryCount);
 
             return;
         }
@@ -113,8 +113,9 @@ internal sealed class DispatchOperationCommandHandler
         {
             _logger.LogError(
                 exception,
-                "Dispatch failed. OperationId={OperationId} RetryCount={RetryCount}",
+                "Dispatch failed. OperationId={OperationId} ProviderPaymentId={ProviderPaymentId} RetryCount={RetryCount}",
                 operation.OperationId,
+                operation.ProviderPaymentId,
                 operation.RetryCount);
 
             throw;
@@ -136,9 +137,11 @@ internal sealed class DispatchOperationCommandHandler
 
             _logger.LogError(
                 exception,
-                "Dispatch failed. OperationId={OperationId} RetryCount={RetryCount}",
+                "Dispatch failed. Retry limit reached. OperationId={OperationId} ProviderPaymentId={ProviderPaymentId} RetryCount={RetryCount} NextDispatchAt={NextDispatchAt}",
                 operation.OperationId,
-                operation.RetryCount);
+                operation.ProviderPaymentId,
+                operation.RetryCount,
+                operation.NextDispatchAt);
 
             return;
         }
@@ -153,8 +156,9 @@ internal sealed class DispatchOperationCommandHandler
 
         _logger.LogWarning(
             exception,
-            "Dispatch retry scheduled. OperationId={OperationId} RetryCount={RetryCount} NextDispatchAt={NextDispatchAt}",
+            "Dispatch retry scheduled. OperationId={OperationId} ProviderPaymentId={ProviderPaymentId} RetryCount={RetryCount} NextDispatchAt={NextDispatchAt}",
             operation.OperationId,
+            operation.ProviderPaymentId,
             operation.RetryCount,
             operation.NextDispatchAt);
     }

@@ -23,7 +23,7 @@ public class EarlyCallbackTests : IntegrationTestBase
             .For(operationId)
             .SubmitAccepted(
                 delay: TimeSpan.FromMilliseconds(5000))
-            .SubmitAccepted() // seed a valid submit so the dispatcher reaches the providerPaymentId mismatch check
+            .SubmitAccepted()
             .Callback(
                 result: ReceiptResult.Completed,
                 delay: TimeSpan.FromMilliseconds(1000));
@@ -77,7 +77,7 @@ public class EarlyCallbackTests : IntegrationTestBase
             .For(operationId)
             .SubmitAccepted(
                 delay: TimeSpan.FromMilliseconds(5000))
-            .SubmitAccepted() // seed a valid submit so the dispatcher reaches the providerPaymentId mismatch check
+            .SubmitAccepted()
             .Callback(
                 result: ReceiptResult.Rejected,
                 delay: TimeSpan.FromMilliseconds(1000));

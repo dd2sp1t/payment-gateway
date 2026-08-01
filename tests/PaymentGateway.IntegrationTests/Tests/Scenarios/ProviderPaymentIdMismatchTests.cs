@@ -21,23 +21,13 @@ public sealed class ProviderPaymentIdMismatchTests : IntegrationTestBase
         const string currency = "RUB";
         const string description = "integration_test";
 
-        var callbackPaymentId = Guid.NewGuid();
-        var submitPaymentId = Guid.NewGuid();
-
-        submitPaymentId
-            .Should()
-            .NotBe(callbackPaymentId);
-
         ScenarioStore
             .For(operationId)
             .SubmitAccepted(
-                providerPaymentId: submitPaymentId,
+                providerPaymentId: Guid.NewGuid(),
                 delay: TimeSpan.FromMilliseconds(5000))
-            .SubmitAccepted(
-                providerPaymentId: submitPaymentId)
             .Callback(
                 result: ReceiptResult.Completed,
-                providerPaymentId: callbackPaymentId,
                 delay: TimeSpan.FromMilliseconds(1000));
 
         var createResponse = await Client.CreateOperationAsync(
@@ -89,20 +79,15 @@ public sealed class ProviderPaymentIdMismatchTests : IntegrationTestBase
         const string currency = "RUB";
         const string description = "integration_test";
 
-        var submitPaymentId = Guid.NewGuid();
-        var callbackPaymentId = Guid.NewGuid();
-
-        submitPaymentId
-            .Should()
-            .NotBe(callbackPaymentId);
-
         ScenarioStore
             .For(operationId)
-            .SubmitAccepted(providerPaymentId: submitPaymentId)
+            .SubmitAccepted()
             .Callback(
                 result: ReceiptResult.Completed,
-                providerPaymentId: callbackPaymentId,
-                delay: TimeSpan.FromMilliseconds(1000));
+                providerPaymentId: Guid.NewGuid(),
+                delay: TimeSpan.FromMilliseconds(1000))
+            .Callback(
+                result: ReceiptResult.Completed);
 
         var createResponse = await Client.CreateOperationAsync(
             operationId,
@@ -122,22 +107,26 @@ public sealed class ProviderPaymentIdMismatchTests : IntegrationTestBase
         await AssertHelper.AssertSubmitScheduledAsync(submitResponse);
 
         // act
-        var callbackResponse = await ScenarioStore.DispatchNextCallbackAsync(operationId);
+        var firstCallbackResponse = await ScenarioStore.DispatchNextCallbackAsync(operationId);
+        var secondCallbackResponse = await ScenarioStore.DispatchNextCallbackAsync(operationId);
 
         // assert
-        callbackResponse
+        firstCallbackResponse
             .Should()
             .NotBeNull();
 
-        callbackResponse.StatusCode
+        firstCallbackResponse.StatusCode
             .Should()
             .Be(HttpStatusCode.Conflict);
+
+        await AssertHelper.AssertCallbackAcceptedAsync(secondCallbackResponse);
 
         var events = await Client.GetEventsAsync(operationId);
 
         AssertHelper.AssertEventSequence(
             events,
             "CREATED",
-            "SUBMITTED");
+            "SUBMITTED",
+            "COMPLETED");
     }
 }

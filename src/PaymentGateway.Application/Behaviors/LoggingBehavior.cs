@@ -22,14 +22,12 @@ internal sealed class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<T
         var start = Stopwatch.GetTimestamp();
 
         var requestName = typeof(TRequest).Name;
-        var requestBody = JsonSerializer.Serialize(request);
         var operationId = (request as IOperationRequest)?.OperationId;
 
-        _logger.LogDebug(
-            "Handling request. OperationId={OperationId} Request={Request} Body={Body}",
+        _logger.LogInformation(
+            "Application request started. OperationId={OperationId} ApplicationRequest={ApplicationRequest}",
             operationId,
-            requestName,
-            requestBody);
+            requestName);
 
         try
         {
@@ -37,8 +35,8 @@ internal sealed class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<T
 
             var elapsed = Stopwatch.GetElapsedTime(start);
 
-            _logger.LogDebug(
-                "Request handled. OperationId={OperationId} Request={Request} DurationMs={DurationMs}",
+            _logger.LogInformation(
+                "Application request completed. OperationId={OperationId} ApplicationRequest={ApplicationRequest} DurationMs={DurationMs}",
                 operationId,
                 requestName,
                 elapsed.TotalMilliseconds);
@@ -48,10 +46,11 @@ internal sealed class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<T
         catch (Exception exception)
         {
             var elapsed = Stopwatch.GetElapsedTime(start);
+            var requestBody = JsonSerializer.Serialize(request);
 
             _logger.LogError(
                 exception,
-                "Request failed. OperationId={OperationId} Request={Request} DurationMs={DurationMs} Body={Body}",
+                "Application request failed. OperationId={OperationId} ApplicationRequest={ApplicationRequest} DurationMs={DurationMs} Body={Body}",
                 operationId,
                 requestName,
                 elapsed.TotalMilliseconds,

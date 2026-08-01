@@ -169,12 +169,12 @@ public class CallbackIdempotencyTests : IntegrationTestBase
         await AssertHelper.AssertSubmitScheduledAsync(submitResponse);
 
         // act
-        var firstCallback = await ScenarioStore.DispatchNextCallbackAsync(operationId);
-        var secondCallback = await ScenarioStore.DispatchNextCallbackAsync(operationId);
+        var firstCallbackResponse = await ScenarioStore.DispatchNextCallbackAsync(operationId);
+        var secondCallbackResponse = await ScenarioStore.DispatchNextCallbackAsync(operationId);
 
         // assert
-        await AssertHelper.AssertCallbackAcceptedAsync(firstCallback);
-        await AssertHelper.AssertCallbackAcceptedAsync(secondCallback);
+        await AssertHelper.AssertCallbackAcceptedAsync(firstCallbackResponse);
+        await AssertHelper.AssertCallbackAcceptedAsync(secondCallbackResponse);
 
         await AssertHelper.AssertStatusIsStable(
             Client,
