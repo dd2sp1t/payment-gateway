@@ -79,6 +79,8 @@ internal sealed class DispatchOperationCommandHandler
 
     private async Task DispatchAsync(Operation operation, CancellationToken cancellationToken)
     {
+        _metrics.ProviderDispatchStarted();
+
         var request = new SubmitPaymentRequest(
             operation.OperationId,
             operation.Amount.ToInvariantString(),
@@ -86,8 +88,6 @@ internal sealed class DispatchOperationCommandHandler
 
         try
         {
-            _metrics.DispatchRequested();
-
             var response = await _paymentProviderClient.SubmitAsync(
                 request,
                 operation.RetryCount,
@@ -97,7 +97,7 @@ internal sealed class DispatchOperationCommandHandler
 
             await PersistAsync(operation, cancellationToken);
 
-            _metrics.DispatchSucceeded();
+            _metrics.ProviderDispatchSucceeded();
 
             _logger.LogInformation(
                 "Dispatch succeeded. OperationId={OperationId} ProviderPaymentId={ProviderPaymentId} RetryCount={RetryCount}",
@@ -107,10 +107,14 @@ internal sealed class DispatchOperationCommandHandler
         }
         catch (Exception exception) when (_dispatchFailureClassifier.IsTransient(exception))
         {
+            _metrics.ProviderDispatchFailed();
+
             await HandleTransientFailureAsync(operation, exception, cancellationToken);
         }
         catch (Exception exception)
         {
+            _metrics.ProviderDispatchFailed();
+
             _logger.LogError(
                 exception,
                 "Dispatch failed. OperationId={OperationId} ProviderPaymentId={ProviderPaymentId} RetryCount={RetryCount}",
@@ -133,7 +137,7 @@ internal sealed class DispatchOperationCommandHandler
 
             await PersistAsync(operation, cancellationToken);
 
-            _metrics.DispatchRetryLimitReached();
+            _metrics.ProviderDispatchRetryLimitReached();
 
             _logger.LogError(
                 exception,
@@ -152,7 +156,7 @@ internal sealed class DispatchOperationCommandHandler
 
         await PersistAsync(operation, cancellationToken);
 
-        _metrics.DispatchRetryScheduled();
+        _metrics.ProviderDispatchRetryScheduled();
 
         _logger.LogWarning(
             exception,

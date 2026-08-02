@@ -497,9 +497,70 @@
                         "lineInterpolation": "linear",
                         "lineWidth": 2
                     },
-                    "unit": "reqps"
+                    "unit": "ops"
                 },
-                "overrides": []
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Started"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "blue",
+                                    "mode": "fixed"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Succeeded"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "green",
+                                    "mode": "fixed"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Failed"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "red",
+                                    "mode": "fixed"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Concurrency Retry"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "orange",
+                                    "mode": "fixed"
+                                }
+                            }
+                        ]
+                    }
+                ]
             },
             "gridPos": {
                 "h": 7,
@@ -525,12 +586,30 @@
             "targets": [
                 {
                     "datasource": "Prometheus",
-                    "expr": "sum(rate(application_request_duration_milliseconds_count[$__rate_interval])) by (application_request)",
-                    "legendFormat": "{{application_request}}",
+                    "expr": "sum(rate(application_request_started_total[$__rate_interval]))",
+                    "legendFormat": "Started",
                     "refId": "A"
+                },
+                {
+                    "datasource": "Prometheus",
+                    "expr": "sum(rate(application_request_succeeded_total[$__rate_interval]))",
+                    "legendFormat": "Succeeded",
+                    "refId": "B"
+                },
+                {
+                    "datasource": "Prometheus",
+                    "expr": "sum(rate(application_request_failed_total[$__rate_interval]))",
+                    "legendFormat": "Failed",
+                    "refId": "C"
+                },
+                {
+                    "datasource": "Prometheus",
+                    "expr": "sum(rate(application_request_concurrency_retry_total[$__rate_interval]))",
+                    "legendFormat": "Concurrency Retry",
+                    "refId": "D"
                 }
             ],
-            "title": "Application Request Throughput (Count)",
+            "title": "Application Requests Timeline & Errors",
             "type": "timeseries"
         },
         {
@@ -596,14 +675,23 @@
             "type": "heatmap"
         },
         {
+            "id": 9,
+            "type": "stat",
+            "title": "Application Concurrency Retry Rate (5m)",
             "datasource": "Prometheus",
+            "gridPos": {
+                "h": 7,
+                "w": 12,
+                "x": 0,
+                "y": 20
+            },
             "fieldConfig": {
                 "defaults": {
+                    "unit": "percentunit",
+                    "decimals": 2,
                     "color": {
                         "mode": "thresholds"
                     },
-                    "decimals": 0,
-                    "min": 0,
                     "thresholds": {
                         "mode": "absolute",
                         "steps": [
@@ -613,25 +701,17 @@
                             },
                             {
                                 "color": "yellow",
-                                "value": 5
+                                "value": 0.01
                             },
                             {
                                 "color": "red",
-                                "value": 20
+                                "value": 0.05
                             }
                         ]
-                    },
-                    "unit": "none"
+                    }
                 },
                 "overrides": []
             },
-            "gridPos": {
-                "h": 7,
-                "w": 12,
-                "x": 0,
-                "y": 20
-            },
-            "id": 9,
             "options": {
                 "colorMode": "background",
                 "graphMode": "area",
@@ -648,18 +728,15 @@
             },
             "targets": [
                 {
-                    "datasource": "Prometheus",
-                    "expr": "sum(increase(application_request_concurrency_retry_total[5m]))",
-                    "refId": "A"
+                    "refId": "A",
+                    "expr": "sum(increase(application_request_concurrency_retry_total[5m])) / clamp_min(sum(increase(application_request_started_total[5m])),1)"
                 }
-            ],
-            "title": "Concurrent Retries (5m)",
-            "type": "stat"
+            ]
         },
         {
             "id": 10,
             "type": "timeseries",
-            "title": "Concurrency Retries by Request (Rate)",
+            "title": "Application Concurrency Retry Rate by Request",
             "datasource": "Prometheus",
             "gridPos": {
                 "h": 7,
@@ -669,6 +746,8 @@
             },
             "fieldConfig": {
                 "defaults": {
+                    "unit": "percentunit",
+                    "decimals": 2,
                     "color": {
                         "mode": "palette-classic"
                     },
@@ -678,8 +757,7 @@
                         "lineWidth": 2,
                         "fillOpacity": 15,
                         "showPoints": "never"
-                    },
-                    "unit": "ops"
+                    }
                 },
                 "overrides": []
             },
@@ -689,17 +767,19 @@
                     "placement": "bottom",
                     "calcs": [
                         "lastNotNull",
-                        "max"
+                        "max",
+                        "mean"
                     ]
                 },
                 "tooltip": {
-                    "mode": "multi"
+                    "mode": "multi",
+                    "sort": "desc"
                 }
             },
             "targets": [
                 {
                     "refId": "A",
-                    "expr": "sum by (application_request) (rate(application_request_concurrency_retry_total[$__rate_interval]))",
+                    "expr": "sum by(application_request)(rate(application_request_concurrency_retry_total[$__rate_interval])) / clamp_min(sum by(application_request)(rate(application_request_started_total[$__rate_interval])),0.000001)",
                     "legendFormat": "{{application_request}}"
                 }
             ]
@@ -951,7 +1031,7 @@
             "targets": [
                 {
                     "datasource": "Prometheus",
-                    "expr": "(sum(increase(provider_dispatch_succeeded_total[5m])) / (sum(increase(provider_dispatch_requests_total[5m])) > 0)) * 100",
+                    "expr": "(sum(increase(provider_dispatch_succeeded_total[5m])) / (sum(increase(provider_dispatch_started_total[5m])) > 0)) * 100",
                     "legendFormat": "Success Rate",
                     "refId": "A"
                 }
@@ -1038,7 +1118,7 @@
                     {
                         "matcher": {
                             "id": "byName",
-                            "options": "Requests Issued"
+                            "options": "Requests Started"
                         },
                         "properties": [
                             {
@@ -1053,13 +1133,43 @@
                     {
                         "matcher": {
                             "id": "byName",
-                            "options": "Succeeded"
+                            "options": "Requests Succeeded"
                         },
                         "properties": [
                             {
                                 "id": "color",
                                 "value": {
                                     "fixedColor": "green",
+                                    "mode": "fixed"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Requests Failed"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "red",
+                                    "mode": "fixed"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Retry Scheduled"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "orange",
                                     "mode": "fixed"
                                 }
                             }
@@ -1106,27 +1216,33 @@
             "targets": [
                 {
                     "datasource": "Prometheus",
-                    "expr": "sum(rate(provider_dispatch_requests_total[$__rate_interval]))",
-                    "legendFormat": "Requests Issued",
+                    "expr": "sum(rate(provider_dispatch_started_total[$__rate_interval]))",
+                    "legendFormat": "Requests Started",
                     "refId": "A"
                 },
                 {
                     "datasource": "Prometheus",
                     "expr": "sum(rate(provider_dispatch_succeeded_total[$__rate_interval]))",
-                    "legendFormat": "Succeeded",
+                    "legendFormat": "Requests Succeeded",
                     "refId": "B"
+                },
+                {
+                    "datasource": "Prometheus",
+                    "expr": "sum(rate(provider_dispatch_failed_total[$__rate_interval]))",
+                    "legendFormat": "Requests Failed",
+                    "refId": "C"
                 },
                 {
                     "datasource": "Prometheus",
                     "expr": "sum(rate(provider_dispatch_retry_scheduled_total[$__rate_interval]))",
                     "legendFormat": "Retry Scheduled",
-                    "refId": "C"
+                    "refId": "D"
                 },
                 {
                     "datasource": "Prometheus",
                     "expr": "sum(rate(provider_dispatch_retry_limit_reached_total[$__rate_interval]))",
                     "legendFormat": "Retry Limit Reached",
-                    "refId": "D"
+                    "refId": "E"
                 }
             ],
             "title": "Provider Dispatch Operations Timeline & Errors",

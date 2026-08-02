@@ -3,6 +3,7 @@ using System.Text.Json;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using PaymentGateway.Application.Abstractions.Requests;
+using PaymentGateway.Application.Helpers;
 
 internal sealed class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
@@ -21,7 +22,7 @@ internal sealed class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<T
     {
         var start = Stopwatch.GetTimestamp();
 
-        var requestName = typeof(TRequest).Name;
+        var requestName = RequestNameHelper.GetName<TRequest>();
         var operationId = (request as IOperationRequest)?.OperationId;
 
         _logger.LogDebug(

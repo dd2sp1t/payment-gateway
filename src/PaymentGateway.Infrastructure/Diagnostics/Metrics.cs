@@ -17,6 +17,21 @@ internal sealed class Metrics : IMetrics
             unit: "ms",
             description: "Application request execution duration.");
 
+    private readonly Counter<long> _applicationRequestsStarted =
+        Meter.CreateCounter<long>(
+            name: "application_request_started",
+            description: "Started application requests.");
+
+    private readonly Counter<long> _applicationRequestsSucceeded =
+        Meter.CreateCounter<long>(
+            name: "application_request_succeeded",
+            description: "Successful application requests.");
+
+    private readonly Counter<long> _applicationRequestsFailed =
+        Meter.CreateCounter<long>(
+            name: "application_request_failed",
+            description: "Failed application requests.");
+
     private readonly Counter<long> _applicationRequestConcurrencyRetry =
         Meter.CreateCounter<long>(
             name: "application_request_concurrency_retry",
@@ -76,15 +91,20 @@ internal sealed class Metrics : IMetrics
             unit: "ms",
             description: "Payment provider request duration.");
 
-    private readonly Counter<long> _providerDispatchRequests =
+    private readonly Counter<long> _providerDispatchStarted =
         Meter.CreateCounter<long>(
-            name: "provider_dispatch_requests",
+            name: "provider_dispatch_started",
             description: "Provider dispatch requests.");
 
     private readonly Counter<long> _providerDispatchSucceeded =
         Meter.CreateCounter<long>(
             name: "provider_dispatch_succeeded",
             description: "Successful provider dispatches.");
+
+    private readonly Counter<long> _providerDispatchFailed =
+        Meter.CreateCounter<long>(
+            name: "provider_dispatch_failed",
+            description: "Failed provider dispatches.");
 
     private readonly Counter<long> _providerDispatchRetryScheduled =
         Meter.CreateCounter<long>(
@@ -116,6 +136,20 @@ internal sealed class Metrics : IMetrics
     public IDisposable MeasureApplicationRequest(string requestName) =>
         new Timer(_applicationRequestDuration, "application_request", requestName);
 
+    public void ApplicationRequestStarted(string requestName) =>
+        _applicationRequestsStarted.Add(
+            1,
+            new KeyValuePair<string, object?>("application_request", requestName));
+
+    public void ApplicationRequestSucceeded(string requestName) =>
+        _applicationRequestsSucceeded.Add(
+            1,
+            new KeyValuePair<string, object?>("application_request", requestName));
+
+    public void ApplicationRequestFailed(string requestName) =>
+        _applicationRequestsFailed.Add(
+            1,
+            new KeyValuePair<string, object?>("application_request", requestName));
     public void ApplicationRequestConcurrencyRetry(string requestName) =>
         _applicationRequestConcurrencyRetry.Add(
             1,
@@ -157,16 +191,19 @@ internal sealed class Metrics : IMetrics
     public IDisposable MeasureProviderRequest() =>
         new Timer(_providerRequestDuration);
 
-    public void DispatchRequested() =>
-        _providerDispatchRequests.Add(1);
+    public void ProviderDispatchStarted() =>
+        _providerDispatchStarted.Add(1);
 
-    public void DispatchSucceeded() =>
+    public void ProviderDispatchSucceeded() =>
         _providerDispatchSucceeded.Add(1);
 
-    public void DispatchRetryScheduled() =>
+    public void ProviderDispatchFailed() =>
+        _providerDispatchFailed.Add(1);
+
+    public void ProviderDispatchRetryScheduled() =>
         _providerDispatchRetryScheduled.Add(1);
 
-    public void DispatchRetryLimitReached() =>
+    public void ProviderDispatchRetryLimitReached() =>
         _providerDispatchRetryLimitReached.Add(1);
 
     #endregion

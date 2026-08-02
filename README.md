@@ -232,24 +232,23 @@ dotnet test --no-build --filter ProviderPaymentIdValidationTests
 
 - http://localhost:3000
 
-В Grafana уже настроена панель **Payment Gateway Infrastructure Diagnostics**, содержащая метрики по:
+В Grafana уже настроен дашборд **Payment Gateway Infrastructure Diagnostics**, содержащий метрики по следующим категориям.
 
-### Операциям
+### Операции
 
-- количество созданных операций;
-- количество отправленных операций;
-- количество успешно завершённых операций;
-- количество отклонённых операций;
+- количество созданных, отправленных, успешно завершённых и отклонённых операций;
 - динамика жизненного цикла операций.
 
 ### Application Layer
 
 Отслеживаются запросы уровня Application (MediatR commands/queries):
 
-- latency (p50 / p95 / average);
+- количество выполненных, успешных и ошибочных запросов;
+- latency (average / p50 / p95);
 - throughput;
 - heatmap времени выполнения;
-- количество concurrency retries.
+- количество и процент optimistic concurrency retries;
+- распределение concurrency retries по типам команд.
 
 ### Dispatch
 
@@ -259,9 +258,10 @@ dotnet test --no-build --filter ProviderPaymentIdValidationTests
 
 ### Интеграции с Provider
 
-- успешность отправок;
+- количество запросов к провайдеру;
+- количество успешных и ошибочных запросов;
+- количество запланированных retry и достижений лимита повторов;
 - latency запросов к провайдеру;
-- timeline выполнения dispatch операций, включая успешные отправки, запланированные retry и достижение лимита повторов;
 - heatmap времени выполнения запросов к провайдеру.
 
 ---

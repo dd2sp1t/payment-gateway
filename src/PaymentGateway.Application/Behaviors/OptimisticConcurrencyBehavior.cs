@@ -4,6 +4,7 @@ using PaymentGateway.Application.Abstractions.Diagnostics;
 using PaymentGateway.Application.Abstractions.Persistence;
 using PaymentGateway.Application.Abstractions.Requests;
 using PaymentGateway.Application.Exceptions;
+using PaymentGateway.Application.Helpers;
 
 namespace PaymentGateway.Application.Behaviors;
 
@@ -39,14 +40,15 @@ internal sealed class OptimisticConcurrencyBehavior<TRequest, TResponse> : IPipe
             }
             catch (ConcurrencyException) when (attempt < MaxRetries)
             {
-                _metrics.ApplicationRequestConcurrencyRetry(typeof(TRequest).Name);
+                var requestName = RequestNameHelper.GetName<TRequest>();
+                _metrics.ApplicationRequestConcurrencyRetry(requestName);
 
                 _unitOfWork.ClearChangeTracker();
 
                 _logger.LogDebug(
                     "Concurrency conflict. OperationId={OperationId} Request={Request} Attempt={Attempt}/{MaxAttempts}",
                     (request as IOperationRequest)?.OperationId,
-                    typeof(TRequest).Name,
+                    requestName,
                     attempt,
                     MaxRetries);
             }

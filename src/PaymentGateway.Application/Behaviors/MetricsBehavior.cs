@@ -1,5 +1,6 @@
 using MediatR;
 using PaymentGateway.Application.Abstractions.Diagnostics;
+using PaymentGateway.Application.Helpers;
 
 namespace PaymentGateway.Application.Behaviors;
 
@@ -18,18 +19,25 @@ internal sealed class MetricsBehavior<TRequest, TResponse> : IPipelineBehavior<T
         RequestHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken)
     {
-        using var _ = _metrics.MeasureApplicationRequest(GetName());
+        var requestName = RequestNameHelper.GetName<TRequest>();
 
-        return await next();
-    }
+        using var _ = _metrics.MeasureApplicationRequest(requestName);
 
-    private static string GetName()
-    {
-        var name = typeof(TRequest).Name;
+        _metrics.ApplicationRequestStarted(requestName);
 
-        name = name.Replace("Command", "");
-        name = name.Replace("Query", "");
+        try
+        {
+            var task = await next();
 
-        return name;
+            _metrics.ApplicationRequestSucceeded(requestName);
+
+            return task;
+        }
+        catch (Exception)
+        {
+            _metrics.ApplicationRequestFailed(requestName);
+
+            throw;
+        }
     }
 }
