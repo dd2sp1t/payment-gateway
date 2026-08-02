@@ -27,11 +27,11 @@ internal sealed class MetricsBehavior<TRequest, TResponse> : IPipelineBehavior<T
 
         try
         {
-            var task = await next();
+            var response = await next();
 
             _metrics.ApplicationRequestSucceeded(requestName);
 
-            return task;
+            return response;
         }
         catch (Exception)
         {
