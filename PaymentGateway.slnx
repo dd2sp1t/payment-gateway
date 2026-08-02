@@ -9,4 +9,7 @@
     <Project Path="tests/PaymentGateway.IntegrationTests/PaymentGateway.IntegrationTests.csproj" />
     <Project Path="tests/PaymentGateway.UnitTests/PaymentGateway.UnitTests.csproj" />
   </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/PaymentGateway.DemoRunner/PaymentGateway.DemoRunner.csproj" />
+  </Folder>
 </Solution>
