@@ -206,6 +206,66 @@ dotnet test --no-build --filter ProviderPaymentIdValidationTests
 
 ---
 
+# Demo Runner
+
+Проект `tools/PaymentGateway.DemoRunner` предназначен для генерации нагрузки, наполнения логов и метрик (Grafana / Prometheus), а также демонстрации основных сценариев работы системы.
+
+## Доступные сценарии
+
+### Basic
+
+Полный успешный сценарий работы системы:
+
+- создание операции;
+- отправка операции;
+- ожидание обработки Provider;
+- получение актуального состояния операции;
+- получение receipt;
+- получение истории событий.
+
+```bash
+dotnet run --project tools/PaymentGateway.DemoRunner -- basic
+```
+
+### Concurrent
+
+Проверка optimistic concurrency при одновременной отправке одной операции несколькими конкурентными запросами.
+
+```bash
+dotnet run --project tools/PaymentGateway.DemoRunner -- concurrent
+```
+
+### Duplicate
+
+Повторные попытки создания операции с одинаковым `OperationId`.
+
+```bash
+dotnet run --project tools/PaymentGateway.DemoRunner -- duplicate
+```
+
+### Validation
+
+Генерация некорректных запросов для проверки валидации и обработки ошибок:
+
+- неверные параметры CreateOperation;
+- неверные параметры SubmitOperation;
+- неверные callback'и ProcessReceipt;
+- запросы к несуществующим операциям (404).
+
+```bash
+dotnet run --project tools/PaymentGateway.DemoRunner -- validation
+```
+
+### All
+
+Последовательно выполняет все доступные сценарии.
+
+```bash
+dotnet run --project tools/PaymentGateway.DemoRunner -- all
+```
+
+---
+
 # Наблюдаемость
 
 ## Логи

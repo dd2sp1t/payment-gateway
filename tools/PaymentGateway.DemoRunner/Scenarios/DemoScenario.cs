@@ -5,6 +5,6 @@ internal enum DemoScenario
     Basic,
     Duplicate,
     Concurrent,
-    Mixed,
+    Validation,
     All
 }

@@ -26,20 +26,23 @@ internal static class Program
         });
 
         builder.Services.AddTransient<IScenario, BasicFlowScenario>();
-        builder.Services.AddTransient<IScenario, DuplicateCreateScenario>();
         builder.Services.AddTransient<IScenario, ConcurrentSubmitScenario>();
-        builder.Services.AddTransient<IScenario, MixedLoadScenario>();
+        builder.Services.AddTransient<IScenario, DuplicateCreateScenario>();
+        builder.Services.AddTransient<IScenario, ValidationScenario>();
 
         using var host = builder.Build();
 
         var scenario = ParseScenario(args);
 
-        await RunScenarioAsync(host.Services.GetRequiredService<IEnumerable<IScenario>>(), scenario);
+        await RunScenarioAsync(
+            host.Services.GetRequiredService<IEnumerable<IScenario>>(),
+            scenario);
     }
 
     private static DemoScenario? ParseScenario(string[] args)
     {
-        if (args.Length != 1 || Enum.TryParse<DemoScenario>(args[0], true, out var scenario) == false)
+        if (args.Length != 1 ||
+            Enum.TryParse<DemoScenario>(args[0], true, out var scenario) == false)
         {
             PrintUsage();
             return null;
@@ -51,12 +54,12 @@ internal static class Program
     private static void PrintUsage()
     {
         Console.WriteLine("""
-Usage (from repository root):
+Usage:
 
   dotnet run --project tools/PaymentGateway.DemoRunner -- basic
-  dotnet run --project tools/PaymentGateway.DemoRunner -- duplicate
   dotnet run --project tools/PaymentGateway.DemoRunner -- concurrent
-  dotnet run --project tools/PaymentGateway.DemoRunner -- mixed
+  dotnet run --project tools/PaymentGateway.DemoRunner -- duplicate
+  dotnet run --project tools/PaymentGateway.DemoRunner -- validation
   dotnet run --project tools/PaymentGateway.DemoRunner -- all
 """);
     }
@@ -66,23 +69,26 @@ Usage (from repository root):
         DemoScenario? scenario,
         CancellationToken cancellationToken = default)
     {
-        if (scenario == null)
+        if (scenario is null)
         {
-
+            return;
         }
 
         if (scenario == DemoScenario.All)
         {
-            foreach (var s in scenarios)
+            foreach (var current in scenarios)
             {
-                await s.RunAsync(cancellationToken);
+                await current.RunAsync(cancellationToken);
             }
 
             return;
         }
 
         var target = scenarios.Single(
-            x => string.Equals(x.Name, scenario.ToString(), StringComparison.OrdinalIgnoreCase));
+            x => string.Equals(
+                x.Name,
+                scenario.ToString(),
+                StringComparison.OrdinalIgnoreCase));
 
         await target.RunAsync(cancellationToken);
     }
