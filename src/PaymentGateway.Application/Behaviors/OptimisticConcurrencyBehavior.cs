@@ -43,7 +43,7 @@ internal sealed class OptimisticConcurrencyBehavior<TRequest, TResponse> : IPipe
 
                 _unitOfWork.ClearChangeTracker();
 
-                _logger.LogInformation(
+                _logger.LogDebug(
                     "Concurrency conflict. OperationId={OperationId} Request={Request} Attempt={Attempt}/{MaxAttempts}",
                     (request as IOperationRequest)?.OperationId,
                     typeof(TRequest).Name,

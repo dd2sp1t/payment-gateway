@@ -24,7 +24,7 @@ internal sealed class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<T
         var requestName = typeof(TRequest).Name;
         var operationId = (request as IOperationRequest)?.OperationId;
 
-        _logger.LogInformation(
+        _logger.LogDebug(
             "Application request started. OperationId={OperationId} ApplicationRequest={ApplicationRequest}",
             operationId,
             requestName);
@@ -35,7 +35,7 @@ internal sealed class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<T
 
             var elapsed = Stopwatch.GetElapsedTime(start);
 
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "Application request completed. OperationId={OperationId} ApplicationRequest={ApplicationRequest} DurationMs={DurationMs}",
                 operationId,
                 requestName,

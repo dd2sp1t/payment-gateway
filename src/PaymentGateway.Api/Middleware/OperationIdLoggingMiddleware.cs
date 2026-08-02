@@ -34,7 +34,7 @@ internal sealed class OperationIdLoggingMiddleware
         {
             var start = Stopwatch.GetTimestamp();
 
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "HTTP request started. Method={Method} Path={Path}",
                 context.Request.Method,
                 context.Request.Path);
@@ -45,7 +45,7 @@ internal sealed class OperationIdLoggingMiddleware
 
                 var elapsed = Stopwatch.GetElapsedTime(start);
 
-                _logger.LogInformation(
+                _logger.LogDebug(
                     "HTTP request completed. Method={Method} Path={Path} StatusCode={StatusCode} DurationMs={DurationMs}",
                     context.Request.Method,
                     context.Request.Path,

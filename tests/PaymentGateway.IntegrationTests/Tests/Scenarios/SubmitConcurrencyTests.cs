@@ -22,15 +22,9 @@ public class SubmitConcurrencyTests : IntegrationTestBase
 
         const int concurrentCount = 10;
 
-        for (var i = 0; i < concurrentCount; i++)
-        {
-            ScenarioStore
-                .For(operationId)
-                .SubmitAccepted();
-        }
-
         ScenarioStore
             .For(operationId)
+            .SubmitAccepted()
             .Callback(
                 ReceiptResult.Completed,
                 delay: TimeSpan.FromMilliseconds(500));
