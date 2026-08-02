@@ -288,41 +288,60 @@ dotnet run --project tools/PaymentGateway.DemoRunner -- all
 
 ## Grafana
 
-Готовый дашборд доступен по адресу:
+Готовые дашборды доступны по адресу:
 
 - http://localhost:3000
 
-В Grafana уже настроен дашборд **Payment Gateway Infrastructure Diagnostics**, содержащий метрики по следующим категориям.
+В Grafana настроены **4 отдельных дашборда**, каждый из которых покрывает свою область мониторинга и помещается на одном экране.
 
-### Операции
+---
 
-- количество созданных, отправленных, успешно завершённых и отклонённых операций;
-- динамика жизненного цикла операций.
+### 1. Payment Gateway - Operations
 
-### Application Layer
+Дашборд отслеживает жизненный цикл операций:
 
-Отслеживаются запросы уровня Application (MediatR commands/queries):
+- **Created Rate (5m)** — количество созданных операций;
+- **Submitted Rate (5m)** — количество отправленных операций;
+- **Completed Rate (5m)** — количество успешно завершенных операций;
+- **Rejected Rate (5m)** — количество отклоненных операций;
+- **Operations Timeline** — динамика всех операций по времени.
 
-- количество выполненных, успешных и ошибочных запросов;
-- latency (average / p50 / p95);
-- throughput;
-- heatmap времени выполнения;
-- количество и процент optimistic concurrency retries;
-- распределение concurrency retries по типам команд.
+---
 
-### Dispatch
+### 2. Payment Gateway - Application Layer
 
-- возраст самой старой операции в состоянии `PROCESSING`;
-- длительность обработки batch'ей;
-- размер batch'ей.
+Дашборд отслеживает запросы уровня Application (MediatR commands/queries):
 
-### Интеграции с Provider
+- **Request Latency** — latency запросов (p50, p95, avg) с разбивкой по типам;
+- **Requests Timeline & Errors** — количество запущенных, успешных и ошибочных запросов;
+- **Request Duration Heatmap** — распределение времени выполнения запросов;
+- **Concurrency Retry Rate (5m)** — процент оптимистичных retry;
+- **Concurrency Retry Rate by Request** — распределение retry по типам команд;
+- **Failed Rate (5m)** — процент ошибочных запросов;
+- **Failed Rate by Request** — распределение ошибок по типам команд.
 
-- количество запросов к провайдеру;
-- количество успешных и ошибочных запросов;
-- количество запланированных retry и достижений лимита повторов;
-- latency запросов к провайдеру;
-- heatmap времени выполнения запросов к провайдеру.
+---
+
+### 3. Payment Gateway - Dispatch Engine
+
+Дашборд отслеживает работу механизма dispatch-обработки:
+
+- **Oldest Processing Operation Age** — возраст самой старой операции в статусе `PROCESSING`;
+- **Dispatch Batch Duration** — длительность обработки batch'ей (p95, avg);
+- **Dispatch Batch Size** — размер batch'ей (p90, avg).
+
+---
+
+### 4. Payment Gateway - Payment Providers
+
+Дашборд отслеживает интеграцию с платежными провайдерами:
+
+- **Succeeded Rate (5m)** — процент успешных запросов к провайдеру;
+- **Retry Rate (5m)** — процент запланированных retry;
+- **Retry Limit Rate (5m)** — процент достижений лимита повторов;
+- **Provider Request Latency** — latency запросов к провайдеру (p50, p95, avg);
+- **Provider Dispatch Operations Timeline & Errors** — динамика запущенных, успешных, ошибочных запросов, retry и достижений лимита;
+- **Provider Request Duration Heatmap** — распределение времени выполнения запросов к провайдеру.
 
 ---
 
