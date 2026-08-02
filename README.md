@@ -334,7 +334,7 @@ dotnet run --project tools/PaymentGateway.DemoRunner -- all
 
 ### 4. Payment Gateway - Payment Providers
 
-Дашборд отслеживает интеграцию с платежными провайдерами:
+Дашборд отслеживает интеграцию с платежным провайдером:
 
 - **Succeeded Rate (5m)** — процент успешных запросов к провайдеру;
 - **Retry Rate (5m)** — процент запланированных retry;
