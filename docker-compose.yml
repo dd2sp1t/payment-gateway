@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: payment_gateway
     ports:
-      - "5432:5432"
+      - "55432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -28,6 +28,7 @@ services:
       - ConnectionStrings__Postgres=Host=postgres;Port=5432;Database=payment_gateway;Username=postgres;Password=postgres
       - PROVIDER_URL=http://provider-simulator:8081
       - Serilog__WriteTo__1__Args__serverUrl=http://seq:80
+      - Serilog__Properties__ContainerName=candidate-service
     ports:
       - "8080:8080"
     volumes:

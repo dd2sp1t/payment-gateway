@@ -30,10 +30,9 @@ internal sealed class DispatchOperationsBackgroundService : PeriodicBackgroundSe
         _options = options.Value;
 
         _logger.LogInformation(
-            "Service configured. ServiceName={ServiceName} Options={Options} HashCode={HashCode}",
+            "Service configured. ServiceName={ServiceName} Options={Options}",
             nameof(DispatchOperationsBackgroundService),
-            JsonSerializer.Serialize(_options),
-            GetHashCode());
+            JsonSerializer.Serialize(_options));
     }
 
     protected override async Task ExecuteIterationAsync(CancellationToken cancellationToken)

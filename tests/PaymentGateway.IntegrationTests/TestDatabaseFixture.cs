@@ -26,6 +26,8 @@ public sealed class TestDatabaseFixture : IAsyncLifetime
         Factory = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
                 {
+                    builder.ConfigureSerilogForTests();
+
                     builder.ConfigureServices(services =>
                     {
                         services
@@ -50,6 +52,8 @@ public sealed class TestDatabaseFixture : IAsyncLifetime
         {
             await Factory.DisposeAsync();
         }
+
+        await Serilog.Log.CloseAndFlushAsync();
 
         await _dbContainer.DisposeAsync();
     }
