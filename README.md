@@ -332,7 +332,7 @@ dotnet run --project tools/PaymentGateway.DemoRunner -- all
 
 ---
 
-### 4. Payment Gateway - Payment Providers
+### 4. Payment Gateway - Payment Provider
 
 Дашборд отслеживает интеграцию с платежным провайдером:
 
