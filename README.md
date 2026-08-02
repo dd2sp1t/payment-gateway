@@ -337,8 +337,8 @@ dotnet run --project tools/PaymentGateway.DemoRunner -- all
 Дашборд отслеживает интеграцию с платежным провайдером:
 
 - **Succeeded Rate (5m)** — процент успешных запросов к провайдеру;
-- **Retry Rate (5m)** — процент запланированных retry;
-- **Retry Limit Rate (5m)** — процент достижений лимита повторов;
+- **Retry Scheduled Rate (5m)** — процент запланированных retry;
+- **Retry Limit Reached Rate (5m)** — процент достижений лимита повторов;
 - **Provider Request Latency** — latency запросов к провайдеру (p50, p95, avg);
 - **Provider Dispatch Operations Timeline & Errors** — динамика запущенных, успешных, ошибочных запросов, retry и достижений лимита;
 - **Provider Request Duration Heatmap** — распределение времени выполнения запросов к провайдеру.

@@ -358,7 +358,7 @@
         {
             "id": 23,
             "type": "stat",
-            "title": "Retry Rate (5m)",
+            "title": "Retry Scheduled Rate (5m)",
             "datasource": "Prometheus",
             "gridPos": {
                 "h": 4,
@@ -417,7 +417,7 @@
         {
             "id": 24,
             "type": "stat",
-            "title": "Retry Limit Rate (5m)",
+            "title": "Retry Limit Reached Rate (5m)",
             "datasource": "Prometheus",
             "gridPos": {
                 "h": 4,
