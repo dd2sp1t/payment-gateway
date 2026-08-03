@@ -300,10 +300,13 @@ dotnet run --project tools/PaymentGateway.DemoRunner -- all
 
 Дашборд отслеживает жизненный цикл операций:
 
+**Overview**
 - **Created Rate (5m)** — количество созданных операций;
 - **Submitted Rate (5m)** — количество отправленных операций;
 - **Completed Rate (5m)** — количество успешно завершенных операций;
-- **Rejected Rate (5m)** — количество отклоненных операций;
+- **Rejected Rate (5m)** — количество отклоненных операций.
+
+**Operations Timeline**
 - **Operations Timeline** — динамика всех операций по времени.
 
 ---
@@ -312,13 +315,22 @@ dotnet run --project tools/PaymentGateway.DemoRunner -- all
 
 Дашборд отслеживает запросы уровня Application (MediatR commands/queries):
 
-- **Request Latency** — latency запросов (p50, p95, avg) с разбивкой по типам;
-- **Requests Timeline & Errors** — количество запущенных, успешных и ошибочных запросов;
-- **Request Duration Heatmap** — распределение времени выполнения запросов;
-- **Concurrency Retry Rate (5m)** — процент оптимистичных retry;
-- **Concurrency Retry Rate by Request** — распределение retry по типам команд;
+**Overview**
 - **Failed Rate (5m)** — процент ошибочных запросов;
+- **Concurrency Retry Rate (5m)** — процент оптимистичных retry.
+
+**Failed Rate by Request**
 - **Failed Rate by Request** — распределение ошибок по типам команд.
+
+**Concurrency Retry Rate by Request**
+- **Concurrency Retry Rate by Request** — распределение retry по типам команд.
+
+**Requests Timeline & Errors**
+- **Requests Timeline & Errors** — количество запущенных, успешных и ошибочных запросов.
+
+**Latency & Performance**
+- **Request Latency** — latency запросов (p50, p95, avg) с разбивкой по типам;
+- **Request Duration Heatmap** — распределение времени выполнения запросов.
 
 ---
 
@@ -326,7 +338,10 @@ dotnet run --project tools/PaymentGateway.DemoRunner -- all
 
 Дашборд отслеживает работу механизма dispatch-обработки:
 
-- **Oldest Processing Operation Age** — возраст самой старой операции в статусе `PROCESSING`;
+**Overview**
+- **Oldest Processing Operation Age** — возраст самой старой операции в статусе `PROCESSING` (критическая метрика).
+
+**Dispatch Processing**
 - **Dispatch Batch Duration** — длительность обработки batch'ей (p95, avg);
 - **Dispatch Batch Size** — размер batch'ей (p90, avg).
 
@@ -336,12 +351,17 @@ dotnet run --project tools/PaymentGateway.DemoRunner -- all
 
 Дашборд отслеживает интеграцию с платежным провайдером:
 
-- **Succeeded Rate (5m)** — процент успешных запросов к провайдеру;
+**Overview**
+- **Failed Rate (5m)** — процент ошибочных запросов к провайдеру;
 - **Retry Scheduled Rate (5m)** — процент запланированных retry;
-- **Retry Limit Reached Rate (5m)** — процент достижений лимита повторов;
-- **Provider Request Latency** — latency запросов к провайдеру (p50, p95, avg);
-- **Provider Dispatch Operations Timeline & Errors** — динамика запущенных, успешных, ошибочных запросов, retry и достижений лимита;
-- **Provider Request Duration Heatmap** — распределение времени выполнения запросов к провайдеру.
+- **Retry Limit Reached Rate (5m)** — процент достижений лимита повторов.
+
+**Requests Timeline & Errors**
+- **Requests Timeline & Errors** — динамика запущенных, успешных, ошибочных запросов, retry и достижений лимита.
+
+**Latency & Performance**
+- **Request Latency** — latency запросов к провайдеру (p50, p95, avg);
+- **Request Duration Heatmap** — распределение времени выполнения запросов к провайдеру.
 
 ---
 

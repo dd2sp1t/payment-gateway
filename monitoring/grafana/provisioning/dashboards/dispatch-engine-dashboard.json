@@ -29,7 +29,7 @@
                 "y": 0
             },
             "id": 102,
-            "title": "Dispatch Processing",
+            "title": "Overview",
             "type": "row",
             "collapsed": false,
             "panels": []
@@ -65,7 +65,7 @@
             },
             "gridPos": {
                 "h": 4,
-                "w": 24,
+                "w": 6,
                 "x": 0,
                 "y": 1
             },
@@ -73,7 +73,7 @@
             "options": {
                 "colorMode": "value",
                 "graphMode": "area",
-                "justifyMode": "auto",
+                "justifyMode": "center",
                 "orientation": "auto",
                 "reduceOptions": {
                     "calcs": [
@@ -82,7 +82,7 @@
                     "fields": "",
                     "values": false
                 },
-                "textMode": "auto"
+                "textMode": "value"
             },
             "targets": [
                 {
@@ -94,6 +94,19 @@
             ],
             "title": "Oldest Processing Operation Age",
             "type": "stat"
+        },
+        {
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 5
+            },
+            "id": 110,
+            "title": "Dispatch Processing",
+            "type": "row",
+            "collapsed": false,
+            "panels": []
         },
         {
             "datasource": "Prometheus",
@@ -113,9 +126,9 @@
             },
             "gridPos": {
                 "h": 8,
-                "w": 12,
+                "w": 24,
                 "x": 0,
-                "y": 5
+                "y": 6
             },
             "id": 18,
             "options": {
@@ -167,9 +180,9 @@
             },
             "gridPos": {
                 "h": 8,
-                "w": 12,
-                "x": 12,
-                "y": 5
+                "w": 24,
+                "x": 0,
+                "y": 14
             },
             "id": 19,
             "options": {

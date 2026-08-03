@@ -29,35 +29,170 @@
                 "y": 0
             },
             "id": 101,
-            "title": "Application Layer Overview",
+            "title": "Overview",
             "type": "row",
             "collapsed": false,
             "panels": []
         },
         {
+            "id": 21,
+            "type": "stat",
+            "title": "Failed Rate (5m)",
             "datasource": "Prometheus",
-            "fieldConfig": {
-                "defaults": {
-                    "color": {
-                        "mode": "palette"
-                    },
-                    "custom": {
-                        "drawStyle": "line",
-                        "fillOpacity": 10,
-                        "lineInterpolation": "smooth",
-                        "lineWidth": 2
-                    },
-                    "unit": "ms"
-                },
-                "overrides": []
-            },
             "gridPos": {
-                "h": 8,
-                "w": 24,
+                "h": 4,
+                "w": 6,
                 "x": 0,
                 "y": 1
             },
-            "id": 6,
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "percentunit",
+                    "decimals": 2,
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 0.01
+                            },
+                            {
+                                "color": "red",
+                                "value": 0.05
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "colorMode": "background",
+                "graphMode": "area",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "value"
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "expr": "sum(increase(application_request_failed_total[5m])) / clamp_min(sum(increase(application_request_started_total[5m])),1)"
+                }
+            ]
+        },
+        {
+            "id": 9,
+            "type": "stat",
+            "title": "Concurrency Retry Rate (5m)",
+            "datasource": "Prometheus",
+            "gridPos": {
+                "h": 4,
+                "w": 6,
+                "x": 6,
+                "y": 1
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "percentunit",
+                    "decimals": 2,
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 0.01
+                            },
+                            {
+                                "color": "red",
+                                "value": 0.05
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "colorMode": "background",
+                "graphMode": "area",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "value"
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "expr": "sum(increase(application_request_concurrency_retry_total[5m])) / clamp_min(sum(increase(application_request_started_total[5m])),1)"
+                }
+            ]
+        },
+        {
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 5
+            },
+            "id": 106,
+            "title": "Failed Rate by Request",
+            "type": "row",
+            "collapsed": false,
+            "panels": []
+        },
+        {
+            "id": 22,
+            "type": "timeseries",
+            "title": "Failed Rate by Request",
+            "datasource": "Prometheus",
+            "gridPos": {
+                "h": 6,
+                "w": 24,
+                "x": 0,
+                "y": 6
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "percentunit",
+                    "decimals": 2,
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "drawStyle": "line",
+                        "lineInterpolation": "linear",
+                        "lineWidth": 2,
+                        "fillOpacity": 15,
+                        "showPoints": "never"
+                    }
+                },
+                "overrides": []
+            },
             "options": {
                 "legend": {
                     "displayMode": "table",
@@ -75,26 +210,88 @@
             },
             "targets": [
                 {
-                    "datasource": "Prometheus",
-                    "expr": "histogram_quantile(0.50, sum(rate(application_request_duration_milliseconds_bucket[$__rate_interval])) by (le, application_request))",
-                    "legendFormat": "{{application_request}} (p50)",
-                    "refId": "A"
-                },
-                {
-                    "datasource": "Prometheus",
-                    "expr": "histogram_quantile(0.95, sum(rate(application_request_duration_milliseconds_bucket[$__rate_interval])) by (le, application_request))",
-                    "legendFormat": "{{application_request}} (p95)",
-                    "refId": "B"
-                },
-                {
-                    "datasource": "Prometheus",
-                    "expr": "sum(rate(application_request_duration_milliseconds_sum[$__rate_interval])) by (application_request) / sum(rate(application_request_duration_milliseconds_count[$__rate_interval])) by (application_request)",
-                    "legendFormat": "{{application_request}} (avg)",
-                    "refId": "C"
+                    "refId": "A",
+                    "expr": "sum by(application_request)(rate(application_request_failed_total[$__rate_interval])) / clamp_min(sum by(application_request)(rate(application_request_started_total[$__rate_interval])),0.000001)",
+                    "legendFormat": "{{application_request}}"
                 }
-            ],
-            "title": "Request Latency",
-            "type": "timeseries"
+            ]
+        },
+        {
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 12
+            },
+            "id": 107,
+            "title": "Concurrency Retry Rate by Request",
+            "type": "row",
+            "collapsed": false,
+            "panels": []
+        },
+        {
+            "id": 10,
+            "type": "timeseries",
+            "title": "Concurrency Retry Rate by Request",
+            "datasource": "Prometheus",
+            "gridPos": {
+                "h": 6,
+                "w": 24,
+                "x": 0,
+                "y": 13
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "percentunit",
+                    "decimals": 2,
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "drawStyle": "line",
+                        "lineInterpolation": "linear",
+                        "lineWidth": 2,
+                        "fillOpacity": 15,
+                        "showPoints": "never"
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "right",
+                    "showLegend": true,
+                    "calcs": [
+                        "lastNotNull",
+                        "mean"
+                    ]
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "expr": "sum by(application_request)(rate(application_request_concurrency_retry_total[$__rate_interval])) / clamp_min(sum by(application_request)(rate(application_request_started_total[$__rate_interval])),0.000001)",
+                    "legendFormat": "{{application_request}}"
+                }
+            ]
+        },
+        {
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 19
+            },
+            "id": 108,
+            "title": "Requests Timeline & Errors",
+            "type": "row",
+            "collapsed": false,
+            "panels": []
         },
         {
             "datasource": "Prometheus",
@@ -178,7 +375,7 @@
                 "h": 8,
                 "w": 24,
                 "x": 0,
-                "y": 9
+                "y": 20
             },
             "id": 7,
             "options": {
@@ -226,12 +423,87 @@
             "type": "timeseries"
         },
         {
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 28
+            },
+            "id": 109,
+            "title": "Latency & Performance",
+            "type": "row",
+            "collapsed": false,
+            "panels": []
+        },
+        {
+            "datasource": "Prometheus",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette"
+                    },
+                    "custom": {
+                        "drawStyle": "line",
+                        "fillOpacity": 10,
+                        "lineInterpolation": "smooth",
+                        "lineWidth": 2
+                    },
+                    "unit": "ms"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 24,
+                "x": 0,
+                "y": 29
+            },
+            "id": 6,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "right",
+                    "showLegend": true,
+                    "calcs": [
+                        "lastNotNull",
+                        "mean"
+                    ]
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "datasource": "Prometheus",
+                    "expr": "histogram_quantile(0.50, sum(rate(application_request_duration_milliseconds_bucket[$__rate_interval])) by (le, application_request))",
+                    "legendFormat": "{{application_request}} (p50)",
+                    "refId": "A"
+                },
+                {
+                    "datasource": "Prometheus",
+                    "expr": "histogram_quantile(0.95, sum(rate(application_request_duration_milliseconds_bucket[$__rate_interval])) by (le, application_request))",
+                    "legendFormat": "{{application_request}} (p95)",
+                    "refId": "B"
+                },
+                {
+                    "datasource": "Prometheus",
+                    "expr": "sum(rate(application_request_duration_milliseconds_sum[$__rate_interval])) by (application_request) / sum(rate(application_request_duration_milliseconds_count[$__rate_interval])) by (application_request)",
+                    "legendFormat": "{{application_request}} (avg)",
+                    "refId": "C"
+                }
+            ],
+            "title": "Request Latency",
+            "type": "timeseries"
+        },
+        {
             "datasource": "Prometheus",
             "gridPos": {
                 "h": 8,
                 "w": 24,
                 "x": 0,
-                "y": 17
+                "y": 37
             },
             "id": 8,
             "options": {
@@ -286,226 +558,6 @@
             ],
             "title": "Request Duration Heatmap",
             "type": "heatmap"
-        },
-        {
-            "id": 9,
-            "type": "stat",
-            "title": "Concurrency Retry Rate (5m)",
-            "datasource": "Prometheus",
-            "gridPos": {
-                "h": 4,
-                "w": 6,
-                "x": 0,
-                "y": 25
-            },
-            "fieldConfig": {
-                "defaults": {
-                    "unit": "percentunit",
-                    "decimals": 2,
-                    "color": {
-                        "mode": "thresholds"
-                    },
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            },
-                            {
-                                "color": "yellow",
-                                "value": 0.01
-                            },
-                            {
-                                "color": "red",
-                                "value": 0.05
-                            }
-                        ]
-                    }
-                },
-                "overrides": []
-            },
-            "options": {
-                "colorMode": "background",
-                "graphMode": "area",
-                "justifyMode": "center",
-                "orientation": "auto",
-                "reduceOptions": {
-                    "calcs": [
-                        "lastNotNull"
-                    ],
-                    "fields": "",
-                    "values": false
-                },
-                "textMode": "value"
-            },
-            "targets": [
-                {
-                    "refId": "A",
-                    "expr": "sum(increase(application_request_concurrency_retry_total[5m])) / clamp_min(sum(increase(application_request_started_total[5m])),1)"
-                }
-            ]
-        },
-        {
-            "id": 10,
-            "type": "timeseries",
-            "title": "Concurrency Retry Rate by Request",
-            "datasource": "Prometheus",
-            "gridPos": {
-                "h": 4,
-                "w": 18,
-                "x": 6,
-                "y": 25
-            },
-            "fieldConfig": {
-                "defaults": {
-                    "unit": "percentunit",
-                    "decimals": 2,
-                    "color": {
-                        "mode": "palette-classic"
-                    },
-                    "custom": {
-                        "drawStyle": "line",
-                        "lineInterpolation": "linear",
-                        "lineWidth": 2,
-                        "fillOpacity": 15,
-                        "showPoints": "never"
-                    }
-                },
-                "overrides": []
-            },
-            "options": {
-                "legend": {
-                    "displayMode": "table",
-                    "placement": "right",
-                    "showLegend": true,
-                    "calcs": [
-                        "lastNotNull",
-                        "mean"
-                    ]
-                },
-                "tooltip": {
-                    "mode": "multi",
-                    "sort": "desc"
-                }
-            },
-            "targets": [
-                {
-                    "refId": "A",
-                    "expr": "sum by(application_request)(rate(application_request_concurrency_retry_total[$__rate_interval])) / clamp_min(sum by(application_request)(rate(application_request_started_total[$__rate_interval])),0.000001)",
-                    "legendFormat": "{{application_request}}"
-                }
-            ]
-        },
-        {
-            "id": 21,
-            "type": "stat",
-            "title": "Failed Rate (5m)",
-            "datasource": "Prometheus",
-            "gridPos": {
-                "h": 4,
-                "w": 6,
-                "x": 0,
-                "y": 29
-            },
-            "fieldConfig": {
-                "defaults": {
-                    "unit": "percentunit",
-                    "decimals": 2,
-                    "color": {
-                        "mode": "thresholds"
-                    },
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            },
-                            {
-                                "color": "yellow",
-                                "value": 0.01
-                            },
-                            {
-                                "color": "red",
-                                "value": 0.05
-                            }
-                        ]
-                    }
-                },
-                "overrides": []
-            },
-            "options": {
-                "colorMode": "background",
-                "graphMode": "area",
-                "justifyMode": "center",
-                "orientation": "auto",
-                "reduceOptions": {
-                    "calcs": [
-                        "lastNotNull"
-                    ],
-                    "fields": "",
-                    "values": false
-                },
-                "textMode": "value"
-            },
-            "targets": [
-                {
-                    "refId": "A",
-                    "expr": "sum(increase(application_request_failed_total[5m])) / clamp_min(sum(increase(application_request_started_total[5m])),1)"
-                }
-            ]
-        },
-        {
-            "id": 22,
-            "type": "timeseries",
-            "title": "Failed Rate by Request",
-            "datasource": "Prometheus",
-            "gridPos": {
-                "h": 4,
-                "w": 18,
-                "x": 6,
-                "y": 29
-            },
-            "fieldConfig": {
-                "defaults": {
-                    "unit": "percentunit",
-                    "decimals": 2,
-                    "color": {
-                        "mode": "palette-classic"
-                    },
-                    "custom": {
-                        "drawStyle": "line",
-                        "lineInterpolation": "linear",
-                        "lineWidth": 2,
-                        "fillOpacity": 15,
-                        "showPoints": "never"
-                    }
-                },
-                "overrides": []
-            },
-            "options": {
-                "legend": {
-                    "displayMode": "table",
-                    "placement": "right",
-                    "showLegend": true,
-                    "calcs": [
-                        "lastNotNull",
-                        "mean"
-                    ]
-                },
-                "tooltip": {
-                    "mode": "multi",
-                    "sort": "desc"
-                }
-            },
-            "targets": [
-                {
-                    "refId": "A",
-                    "expr": "sum by(application_request)(rate(application_request_failed_total[$__rate_interval])) / clamp_min(sum by(application_request)(rate(application_request_started_total[$__rate_interval])),0.000001)",
-                    "legendFormat": "{{application_request}}"
-                }
-            ]
         }
     ],
     "refresh": "10s",
@@ -513,7 +565,7 @@
     "style": "dark",
     "tags": [
         "payment-gateway",
-        "application-api",
+        "application-layer",
         "metrics"
     ],
     "time": {
