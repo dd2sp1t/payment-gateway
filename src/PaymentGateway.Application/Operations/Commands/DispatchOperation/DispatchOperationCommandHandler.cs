@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using PaymentGateway.Application.Abstractions.Diagnostics;
 using PaymentGateway.Application.Abstractions.Dispatch;
 using PaymentGateway.Application.Abstractions.PaymentProvider;
@@ -8,6 +9,7 @@ using PaymentGateway.Application.Abstractions.Persistence;
 using PaymentGateway.Application.Abstractions.Persistence.Repositories;
 using PaymentGateway.Application.Abstractions.Requests;
 using PaymentGateway.Application.Extensions;
+using PaymentGateway.Application.Options;
 using PaymentGateway.Domain.Operations;
 
 namespace PaymentGateway.Application.Operations.Commands.DispatchOperation;
@@ -22,6 +24,7 @@ internal sealed class DispatchOperationCommandHandler
     private readonly IPaymentProviderClient _paymentProviderClient;
     private readonly IDispatchRetryPolicy _dispatchRetryPolicy;
     private readonly IDispatchFailureClassifier _dispatchFailureClassifier;
+    private readonly CallbackOptions _options;
 
     public DispatchOperationCommandHandler(
         ILogger<DispatchOperationCommandHandler> logger,
@@ -30,7 +33,8 @@ internal sealed class DispatchOperationCommandHandler
         IUnitOfWork unitOfWork,
         IPaymentProviderClient paymentProviderClient,
         IDispatchRetryPolicy dispatchRetryPolicy,
-        IDispatchFailureClassifier dispatchFailureClassifier)
+        IDispatchFailureClassifier dispatchFailureClassifier,
+        IOptions<CallbackOptions> options)
     {
         _logger = logger;
         _metrics = metrics;
@@ -39,6 +43,7 @@ internal sealed class DispatchOperationCommandHandler
         _paymentProviderClient = paymentProviderClient;
         _dispatchRetryPolicy = dispatchRetryPolicy;
         _dispatchFailureClassifier = dispatchFailureClassifier;
+        _options = options.Value;
     }
 
     public async Task Handle(DispatchOperationCommand request, CancellationToken cancellationToken)
@@ -94,6 +99,9 @@ internal sealed class DispatchOperationCommandHandler
                 cancellationToken);
 
             operation.AttachProviderPayment(response.ProviderPaymentId);
+
+            var waitUntil = DateTimeOffset.UtcNow.Add(_options.WaitTimeout);
+            operation.WaitForCallbackUntil(waitUntil);
 
             await PersistAsync(operation, cancellationToken);
 

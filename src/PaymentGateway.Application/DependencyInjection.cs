@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PaymentGateway.Application.BackgroundServices.DispatchOperations;
 using PaymentGateway.Application.Behaviors;
+using PaymentGateway.Application.Options;
 
 namespace PaymentGateway.Application;
 
@@ -26,6 +27,9 @@ public static class DependencyInjection
             configuration.GetSection(nameof(DispatchOperationsBackgroundServiceOptions)));
 
         services.AddHostedService<DispatchOperationsBackgroundService>();
+
+        services.Configure<CallbackOptions>(
+            configuration.GetSection(nameof(CallbackOptions)));
 
         return services;
     }

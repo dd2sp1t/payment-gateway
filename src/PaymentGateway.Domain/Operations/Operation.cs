@@ -193,7 +193,17 @@ public sealed class Operation
         SetProviderPaymentId(providerPaymentId);
     }
 
-    public void ScheduleRetry(DateTimeOffset nextAttempt)
+    public void WaitForCallbackUntil(DateTimeOffset nextDispatchAt)
+    {
+        if (Status != OperationStatus.Processing)
+        {
+            throw new DomainException($"Callback waiting is not allowed for operation status '{Status}'.");
+        }
+
+        NextDispatchAt = nextDispatchAt;
+    }
+
+    public void ScheduleRetry(DateTimeOffset nextDispatchAt)
     {
         if (Status != OperationStatus.Processing)
         {
@@ -201,7 +211,7 @@ public sealed class Operation
         }
 
         RetryCount++;
-        NextDispatchAt = nextAttempt;
+        NextDispatchAt = nextDispatchAt;
     }
 
     public void StopRetrying()
