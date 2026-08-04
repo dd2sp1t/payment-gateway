@@ -16,6 +16,7 @@ internal sealed class DispatchOperationsBackgroundService : PeriodicBackgroundSe
     private readonly IMetrics _metrics;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly DispatchOperationsBackgroundServiceOptions _options;
+    private readonly SemaphoreSlim _semaphore;
 
     public DispatchOperationsBackgroundService(
         ILogger<DispatchOperationsBackgroundService> logger,
@@ -33,6 +34,8 @@ internal sealed class DispatchOperationsBackgroundService : PeriodicBackgroundSe
             "Service configured. ServiceName={ServiceName} Options={Options}",
             nameof(DispatchOperationsBackgroundService),
             JsonSerializer.Serialize(_options));
+
+        _semaphore = new SemaphoreSlim(_options.MaxParallelDispatches);
     }
 
     protected override async Task ExecuteIterationAsync(CancellationToken cancellationToken)
@@ -57,12 +60,20 @@ internal sealed class DispatchOperationsBackgroundService : PeriodicBackgroundSe
 
         _metrics.ProcessingOldestAge(oldestAge);
 
-        foreach (var chunk in ids.Chunk(_options.MaxParallelDispatches))
+        var tasks = ids.Select(async id =>
         {
-            var tasks = chunk.Select(id => TryDispatchOperationAsync(id, cancellationToken));
+            await _semaphore.WaitAsync(cancellationToken);
+            try
+            {
+                await TryDispatchOperationAsync(id, cancellationToken);
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+        });
 
-            await Task.WhenAll(tasks);
-        }
+        await Task.WhenAll(tasks);
 
         _metrics.DispatchBatch(ids.Count);
     }

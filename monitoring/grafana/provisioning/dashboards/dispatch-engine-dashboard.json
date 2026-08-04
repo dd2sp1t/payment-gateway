@@ -87,13 +87,72 @@
             "targets": [
                 {
                     "datasource": "Prometheus",
-                    "expr": "processing_oldest_age_seconds",
+                    "expr": "{__name__=\"paymentgateway.dispatch.processing.oldest.age_seconds\"}",
                     "legendFormat": "Oldest Age",
                     "refId": "A"
                 }
             ],
             "title": "Oldest Processing Operation Age",
             "type": "stat"
+        },
+        {
+            "id": 111,
+            "type": "stat",
+            "title": "P95 Batch Duration (5m)",
+            "datasource": "Prometheus",
+            "gridPos": {
+                "h": 4,
+                "w": 6,
+                "x": 6,
+                "y": 1
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "ms",
+                    "decimals": 0,
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "orange",
+                                "value": 500
+                            },
+                            {
+                                "color": "red",
+                                "value": 2000
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "value"
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "expr": "histogram_quantile(0.95, sum(rate({__name__=\"paymentgateway.dispatch.batch.duration_milliseconds_bucket\"}[5m])) by (le))"
+                }
+            ]
         },
         {
             "gridPos": {
@@ -148,18 +207,12 @@
             "targets": [
                 {
                     "datasource": "Prometheus",
-                    "expr": "histogram_quantile(0.95, sum(rate(dispatch_batch_duration_milliseconds_bucket[$__rate_interval])) by (le))",
+                    "expr": "histogram_quantile(0.95, sum(rate({__name__=\"paymentgateway.dispatch.batch.duration_milliseconds_bucket\"}[$__rate_interval])) by (le))",
                     "legendFormat": "p95",
                     "refId": "A"
-                },
-                {
-                    "datasource": "Prometheus",
-                    "expr": "sum(rate(dispatch_batch_duration_milliseconds_sum[$__rate_interval])) / sum(rate(dispatch_batch_duration_milliseconds_count[$__rate_interval]))",
-                    "legendFormat": "avg",
-                    "refId": "B"
                 }
             ],
-            "title": "Dispatch Batch Duration",
+            "title": "Dispatch Batch Duration (p95)",
             "type": "timeseries"
         },
         {
@@ -202,18 +255,12 @@
             "targets": [
                 {
                     "datasource": "Prometheus",
-                    "expr": "histogram_quantile(0.90, sum(rate(dispatch_batch_size_operations_bucket[$__rate_interval])) by (le))",
+                    "expr": "histogram_quantile(0.90, sum(rate({__name__=\"paymentgateway.dispatch.batch.size_operations_bucket\"}[$__rate_interval])) by (le))",
                     "legendFormat": "p90",
                     "refId": "A"
-                },
-                {
-                    "datasource": "Prometheus",
-                    "expr": "sum(rate(dispatch_batch_size_operations_sum[$__rate_interval])) / sum(rate(dispatch_batch_size_operations_count[$__rate_interval]))",
-                    "legendFormat": "avg",
-                    "refId": "B"
                 }
             ],
-            "title": "Dispatch Batch Size",
+            "title": "Dispatch Batch Size (p90)",
             "type": "timeseries"
         }
     ],

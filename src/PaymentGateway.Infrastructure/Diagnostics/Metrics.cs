@@ -13,53 +13,28 @@ internal sealed class Metrics : IMetrics
 
     private readonly Histogram<double> _applicationRequestDuration =
         Meter.CreateHistogram<double>(
-            name: "application_request_duration",
+            name: "paymentgateway.application.request.duration",
             unit: "ms",
             description: "Application request execution duration.");
 
-    private readonly Counter<long> _applicationRequestsStarted =
+    private readonly Counter<long> _applicationRequestAttempts =
         Meter.CreateCounter<long>(
-            name: "application_request_started",
-            description: "Started application requests.");
+            name: "paymentgateway.application.request.attempt",
+            description: "Application request attempts.");
 
-    private readonly Counter<long> _applicationRequestsSucceeded =
+    private readonly Counter<long> _applicationRequestRetries =
         Meter.CreateCounter<long>(
-            name: "application_request_succeeded",
-            description: "Successful application requests.");
-
-    private readonly Counter<long> _applicationRequestsFailed =
-        Meter.CreateCounter<long>(
-            name: "application_request_failed",
-            description: "Failed application requests.");
-
-    private readonly Counter<long> _applicationRequestConcurrencyRetry =
-        Meter.CreateCounter<long>(
-            name: "application_request_concurrency_retry",
-            description: "Optimistic concurrency retries for application requests.");
+            name: "paymentgateway.application.request.retry",
+            description: "Application request retries.");
 
     #endregion
 
     #region Operations
 
-    private readonly Counter<long> _operationsCreated =
+    private readonly Counter<long> _operationEvents =
         Meter.CreateCounter<long>(
-            name: "operations_created",
-            description: "Created operations.");
-
-    private readonly Counter<long> _operationsSubmitted =
-        Meter.CreateCounter<long>(
-            name: "operations_submitted",
-            description: "Submitted operations.");
-
-    private readonly Counter<long> _operationsCompleted =
-        Meter.CreateCounter<long>(
-            name: "operations_completed",
-            description: "Completed operations.");
-
-    private readonly Counter<long> _operationsRejected =
-        Meter.CreateCounter<long>(
-            name: "operations_rejected",
-            description: "Rejected operations.");
+            name: "paymentgateway.operation.event",
+            description: "Operation lifecycle events.");
 
     #endregion
 
@@ -71,13 +46,13 @@ internal sealed class Metrics : IMetrics
 
     private readonly Histogram<double> _dispatchBatchDuration =
         Meter.CreateHistogram<double>(
-            name: "dispatch_batch_duration",
+            name: "paymentgateway.dispatch.batch.duration",
             unit: "ms",
             description: "Dispatch batch execution duration.");
 
     private readonly Histogram<long> _dispatchBatchSize =
         Meter.CreateHistogram<long>(
-            name: "dispatch_batch_size",
+            name: "paymentgateway.dispatch.batch.size",
             unit: "operations",
             description: "Operations processed in a dispatch batch.");
 
@@ -87,34 +62,19 @@ internal sealed class Metrics : IMetrics
 
     private readonly Histogram<double> _providerRequestDuration =
         Meter.CreateHistogram<double>(
-            name: "provider_request_duration",
+            "paymentgateway.provider.request.duration",
             unit: "ms",
             description: "Payment provider request duration.");
 
-    private readonly Counter<long> _providerDispatchStarted =
+    private readonly Counter<long> _providerDispatchAttempts =
         Meter.CreateCounter<long>(
-            name: "provider_dispatch_started",
-            description: "Provider dispatch requests.");
+            "paymentgateway.provider.dispatch.attempt",
+            description: "Provider dispatch attempts.");
 
-    private readonly Counter<long> _providerDispatchSucceeded =
+    private readonly Counter<long> _providerDispatchRetries =
         Meter.CreateCounter<long>(
-            name: "provider_dispatch_succeeded",
-            description: "Successful provider dispatches.");
-
-    private readonly Counter<long> _providerDispatchFailed =
-        Meter.CreateCounter<long>(
-            name: "provider_dispatch_failed",
-            description: "Failed provider dispatches.");
-
-    private readonly Counter<long> _providerDispatchRetryScheduled =
-        Meter.CreateCounter<long>(
-            name: "provider_dispatch_retry_scheduled",
-            description: "Scheduled provider retries.");
-
-    private readonly Counter<long> _providerDispatchRetryLimitReached =
-        Meter.CreateCounter<long>(
-            name: "provider_dispatch_retry_limit_reached",
-            description: "Provider retry limit reached.");
+            "paymentgateway.provider.dispatch.retry",
+            description: "Provider dispatch retries.");
 
     #endregion
 
@@ -123,7 +83,7 @@ internal sealed class Metrics : IMetrics
     public Metrics()
     {
         _ = Meter.CreateObservableGauge(
-            name: "processing_oldest_age",
+            name: "paymentgateway.dispatch.processing.oldest.age",
             observeValue: () => _processingOldestAgeSeconds,
             unit: "s",
             description: "Age of the oldest processing operation.");
@@ -134,42 +94,58 @@ internal sealed class Metrics : IMetrics
     #region Application Requests
 
     public IDisposable MeasureApplicationRequest(string requestName) =>
-        new Timer(_applicationRequestDuration, "application_request", requestName);
+        new Timer(
+            histogram: _applicationRequestDuration,
+            tagName: "request.name",
+            requestName);
 
     public void ApplicationRequestStarted(string requestName) =>
-        _applicationRequestsStarted.Add(
-            1,
-            new KeyValuePair<string, object?>("application_request", requestName));
+        _applicationRequestAttempts.Add(
+            delta: 1,
+            tag1: new("request.name", requestName),
+            tag2: new("event", "started"));
 
     public void ApplicationRequestSucceeded(string requestName) =>
-        _applicationRequestsSucceeded.Add(
-            1,
-            new KeyValuePair<string, object?>("application_request", requestName));
+        _applicationRequestAttempts.Add(
+            delta: 1,
+            tag1: new("request.name", requestName),
+            tag2: new("event", "succeeded"));
 
     public void ApplicationRequestFailed(string requestName) =>
-        _applicationRequestsFailed.Add(
-            1,
-            new KeyValuePair<string, object?>("application_request", requestName));
+        _applicationRequestAttempts.Add(
+            delta: 1,
+            tag1: new("request.name", requestName),
+            tag2: new("event", "failed"));
+
     public void ApplicationRequestConcurrencyRetry(string requestName) =>
-        _applicationRequestConcurrencyRetry.Add(
-            1,
-            new KeyValuePair<string, object?>("application_request", requestName));
+        _applicationRequestRetries.Add(
+            delta: 1,
+            tag1: new("request.name", requestName),
+            tag2: new("reason", "optimistic_concurrency"));
 
     #endregion
 
     #region Operations
 
     public void OperationCreated() =>
-        _operationsCreated.Add(1);
+        _operationEvents.Add(
+            delta: 1,
+            tag: new KeyValuePair<string, object?>("event", "created"));
 
     public void OperationSubmitted() =>
-        _operationsSubmitted.Add(1);
+        _operationEvents.Add(
+            delta: 1,
+            tag: new KeyValuePair<string, object?>("event", "submitted"));
 
     public void OperationCompleted() =>
-        _operationsCompleted.Add(1);
+        _operationEvents.Add(
+            delta: 1,
+            tag: new KeyValuePair<string, object?>("event", "completed"));
 
     public void OperationRejected() =>
-        _operationsRejected.Add(1);
+        _operationEvents.Add(
+            delta: 1,
+            tag: new KeyValuePair<string, object?>("event", "rejected"));
 
     #endregion
 
@@ -192,19 +168,29 @@ internal sealed class Metrics : IMetrics
         new Timer(_providerRequestDuration);
 
     public void ProviderDispatchStarted() =>
-        _providerDispatchStarted.Add(1);
+        _providerDispatchAttempts.Add(
+            delta: 1,
+            tag: new KeyValuePair<string, object?>("event", "started"));
 
     public void ProviderDispatchSucceeded() =>
-        _providerDispatchSucceeded.Add(1);
+        _providerDispatchAttempts.Add(
+            delta: 1,
+            tag: new KeyValuePair<string, object?>("event", "succeeded"));
 
     public void ProviderDispatchFailed() =>
-        _providerDispatchFailed.Add(1);
+        _providerDispatchAttempts.Add(
+            delta: 1,
+            tag: new KeyValuePair<string, object?>("event", "failed"));
 
     public void ProviderDispatchRetryScheduled() =>
-        _providerDispatchRetryScheduled.Add(1);
+        _providerDispatchRetries.Add(
+            delta: 1,
+            tag: new KeyValuePair<string, object?>("event", "scheduled"));
 
     public void ProviderDispatchRetryLimitReached() =>
-        _providerDispatchRetryLimitReached.Add(1);
+        _providerDispatchRetries.Add(
+            delta: 1,
+            tag: new KeyValuePair<string, object?>("event", "limit_reached"));
 
     #endregion
 

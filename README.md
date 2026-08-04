@@ -292,7 +292,7 @@ dotnet run --project tools/PaymentGateway.DemoRunner -- all
 
 - http://localhost:3000
 
-В Grafana настроены **4 отдельных дашборда**, каждый из которых покрывает свою область мониторинга и помещается на одном экране.
+В Grafana настроены **5 отдельных дашбордов**, каждый из которых покрывает свою область мониторинга и помещается на одном экране.
 
 ---
 
@@ -317,7 +317,8 @@ dotnet run --project tools/PaymentGateway.DemoRunner -- all
 
 **Overview**
 - **Failed Rate (5m)** — процент ошибочных запросов;
-- **Concurrency Retry Rate (5m)** — процент оптимистичных retry.
+- **Concurrency Retry Rate (5m)** — процент оптимистичных retry;
+- **P95 Latency (5m)** — p95 latency всех запросов.
 
 **Failed Rate by Request**
 - **Failed Rate by Request** — распределение ошибок по типам команд.
@@ -329,7 +330,7 @@ dotnet run --project tools/PaymentGateway.DemoRunner -- all
 - **Requests Timeline & Errors** — количество запущенных, успешных и ошибочных запросов.
 
 **Latency & Performance**
-- **Request Latency** — latency запросов (p50, p95, avg) с разбивкой по типам;
+- **Request Latency (p95)** — p95 latency запросов с разбивкой по типам;
 - **Request Duration Heatmap** — распределение времени выполнения запросов.
 
 ---
@@ -339,11 +340,12 @@ dotnet run --project tools/PaymentGateway.DemoRunner -- all
 Дашборд отслеживает работу механизма dispatch-обработки:
 
 **Overview**
-- **Oldest Processing Operation Age** — возраст самой старой операции в статусе `PROCESSING` (критическая метрика).
+- **Oldest Processing Operation Age** — возраст самой старой операции в статусе `PROCESSING`;
+- **P95 Batch Duration (5m)** — p95 длительность обработки batch'ей.
 
 **Dispatch Processing**
-- **Dispatch Batch Duration** — длительность обработки batch'ей (p95, avg);
-- **Dispatch Batch Size** — размер batch'ей (p90, avg).
+- **Dispatch Batch Duration (p95)** — длительность обработки batch'ей (p95);
+- **Dispatch Batch Size (p90)** — размер batch'ей (p90).
 
 ---
 
@@ -354,14 +356,40 @@ dotnet run --project tools/PaymentGateway.DemoRunner -- all
 **Overview**
 - **Failed Rate (5m)** — процент ошибочных запросов к провайдеру;
 - **Retry Scheduled Rate (5m)** — процент запланированных retry;
-- **Retry Limit Reached Rate (5m)** — процент достижений лимита повторов.
+- **Retry Limit Reached Rate (5m)** — процент достижений лимита повторов;
+- **P95 Latency (5m)** — p95 latency запросов к провайдеру.
 
 **Requests Timeline & Errors**
 - **Requests Timeline & Errors** — динамика запущенных, успешных, ошибочных запросов, retry и достижений лимита.
 
 **Latency & Performance**
-- **Request Latency** — latency запросов к провайдеру (p50, p95, avg);
+- **Request Latency (p95)** — p95 latency запросов к провайдеру;
 - **Request Duration Heatmap** — распределение времени выполнения запросов к провайдеру.
+
+---
+
+### 5. Payment Gateway - HTTP
+
+Дашборд отслеживает HTTP-трафик на уровне транспортного протокола:
+
+**Overview**
+- **Request Rate (5m)** — общее количество HTTP-запросов;
+- **Error Rate (5m)** — процент ошибок (5xx);
+- **P95 Latency** — p95 latency всех запросов;
+- **Active Connections** — количество активных подключений.
+
+**Requests Rate**
+- **Requests Rate by Endpoint** — количество запросов по эндпоинтам.
+
+**Errors Rate**
+- **Errors Rate by Endpoint (4xx/5xx)** — ошибки по эндпоинтам с разбивкой по статус-кодам.
+
+**Latency & Performance**
+- **Request Latency (p95)** — p95 latency по эндпоинтам;
+- **Request Duration Heatmap** — распределение времени выполнения запросов.
+
+**Status Codes**
+- **Requests by HTTP Status Code** — общее распределение по статус-кодам.
 
 ---
 

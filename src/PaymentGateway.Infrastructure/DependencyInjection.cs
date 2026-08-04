@@ -15,7 +15,7 @@ public static class DependencyInjection
             .AddPersistence(configuration)
             .AddPaymentProvider(configuration)
             .AddDispatch(configuration)
-            .AddDiagnostics(configuration);
+            .AddDiagnostics();
 
         return services;
     }
